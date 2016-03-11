@@ -40,7 +40,21 @@ function LineChart(){
             .attr("width", svgWidth)
             .attr("height", svgHeight)
             .attr("class", "svgbox");
-					
+    
+        //if the id of the container is primitive, it can be added to the arr of the data of the collectedlinegraphbox
+        //this will add a rect with a onclick event that swaps (add/remove) the data from the Data arr
+        if(this.id === "PrimitiveLineGraphBox"){
+            svg.append("rect")
+                .data(data)
+                .attr("width", function() { return svgWidth/14 ; })
+                .attr("height", function() { return svgHeight/6; })
+                .attr("x", function() { return svgWidth * 0.92; })
+                .attr("y", function() { return svgHeight * 0.03; })
+                .attr("fill", "rgb(0,0,0)")
+                .on('click', function(d) { swap(d); });	
+        
+        }
+            
         //Axis functions
         svg.append("g")
             .attr("class", "axis")
@@ -75,7 +89,7 @@ function LineChart(){
             .enter().append('circle')
             .attr('cx', function (d) { return xScale(d.x); })
             .attr('cy', function (d) { return yScale(d.y); })
-            .attr('r', 5); 
+            .attr('r', 5);
     
         });
         
@@ -101,5 +115,6 @@ function LineChart(){
     
     return chart;
     
-}            
+}    
+
                 

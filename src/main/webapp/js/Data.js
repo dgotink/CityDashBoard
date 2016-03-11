@@ -4,12 +4,23 @@ function add(){
     for(var i = 0; i < arguments.length; i++){
         arr[arguments[i].Name] =  arguments[i];
     }
-    return getArr();
+    CreateCollectedGraphBox(getArr());
 }
 
 function remove(){
     for(var i = 0; i < arguments.length; i++){
         delete arr[arguments[i].Name];
+    }
+    CreateCollectedGraphBox(getArr());
+}
+
+function swap(){
+    for(var i = 0; i < arguments.length; i++){
+        if(arr.hasOwnProperty(arguments[i].Name)){
+            remove(arguments[i]);
+        } else {
+            add(arguments[i]);
+        }
     }
     return getArr();
 }
