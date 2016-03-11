@@ -1,5 +1,6 @@
 {
-    "Name": "Yennefer",
+    "Name": "Yenn",
+    "Color": "purple",
     "Data": [
         {"x": -2, "y": 3}, 
         {"x": -1, "y": 1}, 

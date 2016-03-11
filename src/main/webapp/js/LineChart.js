@@ -13,8 +13,7 @@ function LineChart(){
         //Variables needed for scale
         var xExtents = d3.extent(d3.merge(map), function (d) { return d.x; });
         var yExtents = d3.extent(d3.merge(map), function (d) { return d.y; });
-        
-		
+       	
         //Scales
         var xScale = d3.scale.linear()
             .domain([xExtents[0], xExtents[1]])
@@ -54,14 +53,15 @@ function LineChart(){
             .call(yAxis);
 
         var pathContainers = svg.selectAll('g.line')
-            .data(map);
+            .data(data);
 	
         pathContainers.enter().append('g')
+            .attr('stroke', function(d) { return d.Color; })
             .attr('class', 'line');
 	
-        //draw the lines    
+        //Draw the lines    
         pathContainers.selectAll('path')
-            .data(function(d) { return [d]; }) // continues the data from the pathContainer
+            .data(function(d) { return [d.Data]; }) // continues the data from the pathContainer
             .enter().append('path')
             .attr('d', d3.svg.line()
                 .x(function (d) { return xScale(d.x); })
@@ -69,9 +69,9 @@ function LineChart(){
                 .interpolate("monotone")
             );
 		
-        // add circles
+        // Add circles
         pathContainers.selectAll('circle')
-            .data(function(d) { return d; })
+            .data(function(d) { return d.Data; })
             .enter().append('circle')
             .attr('cx', function (d) { return xScale(d.x); })
             .attr('cy', function (d) { return yScale(d.y); })

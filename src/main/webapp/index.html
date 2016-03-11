@@ -9,7 +9,6 @@
 		
 		.line {
 		fill: none;
-		stroke: green;
 		stroke-width: 1.5px;
 		}
 				
@@ -46,6 +45,7 @@
 		<script type="text/javascript">
                 var dataTriss;
                 var dataYenn;
+                var dataShani;
                 
                 d3.json("data/triss.json", function(data){
                     dataTriss = data;
@@ -59,10 +59,17 @@
                             .datum([data])
                             .call(LineChart());
                     
-                    var merged = merge(dataTriss, dataYenn);
+                    d3.json("data/shani.json", function(data){
+                    dataShani = data;
+                    d3.select('#LineGraphBox')
+                            .datum([data])
+                            .call(LineChart());
+                    
+                    var merged = merge(dataTriss, dataYenn, dataShani);
                     d3.select('#LineGraphBox')
                             .datum(merged)
                             .call(LineChart());
+                    });
                 });
             });
                 
