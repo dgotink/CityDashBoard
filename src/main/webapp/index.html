@@ -8,28 +8,28 @@
 		<style type="text/css">
 		
 		.line {
-		fill: none;
-		stroke-width: 1.5px;
+                    fill: none;
+                    stroke-width: 1.5px;
 		}
 				
 		.axis path,
 		.axis line{
-			fill: none;
-			stroke: black;
-			shape-rendering: crispEdges;
+		    fill: none;
+		    stroke: black;
+		    shape-rendering: crispEdges;
 		}
 		.axis text{
-			font-family: "sans-serif";
-			font-size: 11px;
+		    font-family: "sans-serif";
+		    font-size: 11px;
 		}
                 
                 .circle {
-                   fill: green;
+                    fill: green;
                 }
 		
 		.svgbox { 
-		margin: 20px;
-                border-style: outset;
+                    margin: 20px;
+                    border-style: outset;
 		}
                 
                 #LineGraphBox {
@@ -65,10 +65,17 @@
                             .datum([data])
                             .call(LineChart());
                     
-                    var merged = merge(dataTriss, dataYenn, dataShani);
+                    var merged = add(dataTriss, dataYenn, dataShani);
                     d3.select('#LineGraphBox')
                             .datum(merged)
                             .call(LineChart());
+                    
+                    
+                    merged = remove(dataYenn);
+                    d3.select('#LineGraphBox')
+                            .datum(merged)
+                            .call(LineChart());
+                    
                     });
                 });
             });
