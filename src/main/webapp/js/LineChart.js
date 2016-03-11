@@ -2,14 +2,13 @@
 function LineChart(){
     //Width & height
     var svgWidth = 800;
-    var svgHeight = 550;
+    var svgHeight = 250;
     var padding = 25;
     
     function chart(selection){
         selection.each(function(data) { 
-         //Make the dataset and map (map for drawing, dataset for the names)
-        var dataset = data;
-        var map = dataset.map(function (d) { return d.Data; });
+         //Make the map
+        var map = data.map(function (d) { return d.Data; });
                 
         //Variables needed for scale
         var xExtents = d3.extent(d3.merge(map), function (d) { return d.x; });
@@ -81,6 +80,24 @@ function LineChart(){
         });
         
     }
+    
+    chart.width = function(value) {
+        if (!arguments.length) return svgWidth;
+        svgWidth = value;
+        return chart;
+    	};
+ 
+    	chart.height = function(value) {
+            if (!arguments.length) return svgHeight;
+            svgHeight = value;
+            return chart;
+    	};
+ 
+        chart.padding = function(value) {
+            if (!arguments.length) return padding;
+            padding = value;
+            return chart;
+    	};
     
     return chart;
     

@@ -4,16 +4,13 @@
 		<meta charset="utf-8">
 		<script src="http://d3js.org/d3.v3.min.js"></script>
                 <script src="js/LineChart.js"></script>
+                <script src="js/Data.js"></script>
 		<style type="text/css">
 		
 		.line {
 		fill: none;
 		stroke: green;
 		stroke-width: 1.5px;
-		}
-		
-		.svgBox { 
-		background-color: #333;
 		}
 				
 		.axis path,
@@ -33,35 +30,41 @@
 		
 		.svgbox { 
 		margin: 20px;
+                border-style: outset;
 		}
+                
+                #LineGraphBox {
+                    
+                }
 		
 		
 		</style>
 	</head>
 	<body>
+            <div id="LineGraphBox">
+            </div>
 		<script type="text/javascript">
                 var dataTriss;
                 var dataYenn;
                 
                 d3.json("data/triss.json", function(data){
                     dataTriss = data;
-                    /*d3.select('body')
-                            .datum(data)
-                            .call(LineChart());*/
+                    d3.select('#LineGraphBox')
+                            .datum([data])
+                            .call(LineChart());
                     
                     d3.json("data/yenn.json", function(data){
                     dataYenn = data;
-                    /*d3.select('body')
-                            .datum(data)
-                            .call(LineChart());*/
+                    d3.select('#LineGraphBox')
+                            .datum([data])
+                            .call(LineChart());
                     
-                    var merged = [dataTriss, dataYenn];
-                    d3.select('body')
+                    var merged = merge(dataTriss, dataYenn);
+                    d3.select('#LineGraphBox')
                             .datum(merged)
                             .call(LineChart());
                 });
-                });
-                
+            });
                 
                 
 		</script>
