@@ -1,0 +1,234 @@
+
+
+
+
+//go to https://bost.ocks.org/mike/chart/ 
+//https://www.toptal.com/d3-js/towards-reusable-d3-js-charts
+//for more explanations
+function LineChart(){
+    //All the options that are accesible to the caller
+    var svgWidth = 800;
+    var svgHeight = 250;
+    var padding = 25;
+    var data = [];
+    
+    var updateWidth;
+    var updateHeight;
+    var updateData;
+    
+    //All the variables needed for the rendering
+    var xScale;
+    var yScale;
+    var xAxis;
+    var yAxis;
+    var svg;
+    
+    //Line variables | transline for translation | line for drawing the line 
+    var transline = d3.svg.line().interpolate("monotone")
+        .x(function(d){ return xScale(d.x); })
+        .y(function(d){ return svgHeight - padding; });
+    
+ 
+    var line = d3.svg.line().interpolate("monotone")
+        .x(function(d){ return xScale(d.x); })
+        .y(function(d){ return yScale(d.y); });
+
+    function chart(selection){
+        selection.each(function() {
+        //Svg						 
+        svg = d3.select(this)
+            .append("svg")
+            .attr("width", svgWidth)
+            .attr("height", svgHeight)
+            .attr("class", "svgbox");
+      	
+        //Initiliaze the scales
+        xScale = d3.scale.linear()
+            .range([padding, svgWidth - padding]);
+							 
+        yScale = d3.scale.linear()
+            .range([svgHeight - padding, padding]);
+    
+        //Initiliaze the axis
+        xAxis = d3.svg.axis()
+            .scale(xScale)
+            .orient("bottom")
+            .ticks(8);
+						  
+        yAxis = d3.svg.axis()
+            .scale(yScale)
+            .orient("left")
+            .ticks(6);
+   
+        svg.append("g")
+            .attr("class", "axis x")
+            .attr("transform", "translate(0, " + (svgHeight - padding) + ")")
+            .call(xAxis);
+		   
+        svg.append("g")
+            .attr("class", "axis y")
+            .attr("transform", "translate(" + padding + ",0)")
+            .call(yAxis);
+    
+        //if the id of the container is primitive, it can be added to the arr of the data of the collectedlinegraphbox
+        //this will add a rect with a onclick event that swaps (add/remove) the data from the Data arr
+        if(this.id === "PrimitiveLineGraphBox"){
+            svg.append("rect")
+                .data(data)
+                .attr("width", function() { return svgWidth/14 ; })         //there is no algorithm or formula for these values 
+                .attr("height", function() { return svgHeight/6; })         //just trial and error
+                .attr("x", function() { return svgWidth * 0.92; })
+                .attr("y", function() { return svgHeight * 0.03; })
+                .attr("fill", "rgb(0,0,0)")
+                .on('click', function(d) { swap(d); });	
+        }
+            render();
+        });
+    }
+
+    //because binding the data by index will not work, we bind the data by name. this funcion is called for the keys
+    function name(d){
+        return d.Name;
+    }
+
+    function init(){
+        //Svg						 
+        svg = d3.select(this)
+            .append("svg")
+            .attr("width", svgWidth)
+            .attr("height", svgHeight)
+            .attr("class", "svgbox");
+      	
+        //Initiliaz the scales
+        xScale = d3.scale.linear()
+            .range([padding, svgWidth - padding]);
+							 
+        yScale = d3.scale.linear()
+            .range([svgHeight - padding, padding]);
+    
+        //Initiliaze the axis
+        xAxis = d3.svg.axis()
+            .scale(xScale)
+            .orient("bottom")
+            .ticks(8);
+						  
+        yAxis = d3.svg.axis()
+            .scale(yScale)
+            .orient("left")
+            .ticks(6);
+   
+        svg.append("g")
+            .attr("class", "axis x")
+            .attr("transform", "translate(0, " + (svgHeight - padding) + ")")
+            .call(xAxis);
+		   
+        svg.append("g")
+            .attr("class", "axis y")
+            .attr("transform", "translate(" + padding + ",0)")
+            .call(yAxis);
+    
+        //if the id of the container is primitive, it can be added to the arr of the data of the collectedlinegraphbox
+        //this will add a rect with a onclick event that swaps (add/remove) the data from the Data arr
+        if(this.id === "PrimitiveLineGraphBox"){
+            svg.append("rect")
+                .data(data)
+                .attr("width", function() { return svgWidth/14 ; })         //there is no algorithm or formula for these values 
+                .attr("height", function() { return svgHeight/6; })         //just trial and error
+                .attr("x", function() { return svgWidth * 0.92; })
+                .attr("y", function() { return svgHeight * 0.03; })
+                .attr("fill", "rgb(0,0,0)")
+                .on('click', function(d) { swap(d); });	
+        }
+    };
+    
+    function render(){
+        //Make the map of the data
+        var map = data.map(function (d) { return d.Data; });
+                
+        //Variables needed for scale
+        var xExtents = d3.extent(d3.merge(map), function (d) { return d.x; });
+        var yExtents = d3.extent(d3.merge(map), function (d) { return d.y; });
+        
+        //Add the domain of the scale
+        xScale.domain([xExtents[0], xExtents[1]]);
+        yScale.domain([yExtents[0], yExtents[1]]);
+        
+        //Redraw the axis
+        xAxis = d3.svg.axis().scale(xScale).orient("bottom").ticks(8);
+        yAxis = d3.svg.axis().scale(yScale).orient("left").ticks(6);
+
+        svg.selectAll('g.x.axis')
+            .call(xAxis);
+
+        svg.selectAll('g.y.axis')
+            .call(yAxis);
+            
+        //the container contains all the different line data    
+        var container = svg.selectAll('g.line')
+            .data(data, name);
+        
+        //UPDATE
+        container.selectAll('path')
+                .data(function(d) { return [d.Data]; })
+                .attr('d', line);
+        
+        //ENTER
+        container.enter().append('g')
+            .attr('stroke', function(d) { return d.Color; })
+            .attr('class', 'line');
+	
+        container.selectAll('path')
+            .data(function(d) { return [d.Data]; }) 
+            .enter().append('path')
+            .attr('d', transline)
+            .transition().duration(1500)
+            .attr('d', line);
+        
+        //EXIT
+        container.exit().remove();
+    }
+     		
+       
+    //update functions
+    updateWidth = function() {
+        xScale.range([padding, svgWidth - padding]);
+        svg.transition().duration(1000).attr('width', svgWidth);
+    };
+        
+    updateHeight = function() {
+        yScale.range([svgHeight - padding, padding]);
+        svg.transition().duration(1000).attr('height', svgHeight);
+    };  
+    
+    chart.data = function(value) {
+    	if (!arguments.length) return data;
+    	data = value;
+    	if (typeof updateData === 'function') updateData();
+    	return chart;
+    };
+        
+    chart.width = function(value) {
+        if (!arguments.length) return svgWidth;
+        svgWidth = value;
+        if (typeof updateWidth === 'function') updateWidth();
+        return chart;
+    };
+ 
+    chart.height = function(value) {
+        if (!arguments.length) return svgHeight;
+        svgHeight = value;
+        if (typeof updateHeight === 'function') updateHeight();
+        return chart;
+    };
+ 
+    chart.padding = function(value) {
+        if (!arguments.length) return padding;
+        padding = value;
+        return chart;
+    };
+    
+    return chart;
+    
+}    
+
+                              

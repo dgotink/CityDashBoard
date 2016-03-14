@@ -2,7 +2,7 @@
 //https://www.toptal.com/d3-js/towards-reusable-d3-js-charts
 //for more explanations
 function LineChart(){
-    //All the options that should be accesible to the caller
+    //All the options that are accesible to the caller
     var svgWidth = 800;
     var svgHeight = 250;
     var padding = 25;
@@ -95,7 +95,7 @@ function LineChart(){
             .data(function(d) { return [d.Data]; }) // continues the data from the pathContainer
             .enter().append('path')
             .attr('d', transline)
-            .transition().duration(2000)
+            .transition().duration(1500)
             .attr('d', line);
 		
         // Add circles
@@ -105,7 +105,7 @@ function LineChart(){
             .attr('cx', function (d) { return xScale(d.x); })
             .attr('cy', svgHeight - padding)
             .attr('r', 5)
-            .transition().duration(2000)
+            .transition().duration(1500)
             .attr('cy', function (d) { return yScale(d.y); });
     
         //update functions
@@ -133,39 +133,55 @@ function LineChart(){
             var yAxis = d3.svg.axis().scale(yScale).orient("left").ticks(6);
 
             svg.selectAll('g.x.axis')
-                .call(xAxis)
+                .transition().duration(1500)
+                .call(xAxis);
 
             svg.selectAll('g.y.axis')
+                .transition().duration(1500)
                 .call(yAxis);
         
-            svg.selectAll('.line').remove();
+            //container.remove();
                   
-            var container = svg.selectAll('g.line')
-                .data(data);
+            container = svg.selectAll('g.line')
+                .data(data, name)
+                .attr('d', line);
         
-            //enter
+            //UPDATE
+            container.selectAll('path')
+                .data(function(d) { return [d.Data]; })
+                .transition().duration(1500)
+                .attr('d', line);
+        
+             container.selectAll('circle')
+                .data(function(d) { return d.Data; })
+                .transition().duration(1500)
+                .attr('cx', function (d) { return xScale(d.x); })
+                .attr('cy', function (d) { return yScale(d.y); });
+        
+            //ENTER
             container.enter().append('g')
                 .attr('stroke', function(d) { return d.Color; })
                 .attr('class', 'line');
 	
-            //Draw the lines    
             container.selectAll('path')
                 .data(function(d) { return [d.Data]; }) // continues the data from the pathContainer
                 .enter().append('path')
                 .attr('d', transline)
-                .transition().duration(2000)
+                .transition().duration(1500)
                 .attr('d', line);
-		
-            // Add circles
+              
             container.selectAll('circle')
                 .data(function(d) { return d.Data; })
                 .enter().append('circle')
                 .attr('cx', function (d) { return xScale(d.x); })
                 .attr('cy', svgHeight - padding)
                 .attr('r', 5)
-                .transition().duration(2000)
+                .transition().duration(1500)
                 .attr('cy', function (d) { return yScale(d.y); });
- 
+        
+            //EXIT
+            container.exit().remove();
+                
             };
         });  
     }
@@ -197,8 +213,10 @@ function LineChart(){
         return chart;
     };
     
-    return chart;
+    //because binding the data by index will not work, we bind the data by name. this funcion is called for the keys
+    function name(d){
+        return d.Name;
+    }
     
-}    
-
-                
+    return chart;
+}  
