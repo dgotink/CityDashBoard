@@ -36,39 +36,36 @@
             <div id="CollectedLineGraphBox">
             </div>
 		<script type="text/javascript">
-                var dataTriss;
-                var dataYenn;
-                var dataShani;
+                var TrissGraph;
+                var YennGraph;
+                var ShaniGraph;
+                var CollectedGraph;
                 
                 d3.json("data/triss.json", function(data){
-                    dataTriss = data;
+                    TrissGraph = LineChart().data([data]);
                     d3.select('#PrimitiveLineGraphBox')
-                            .datum([data])
-                            .call(LineChart());
+                        .call(TrissGraph);
                     
                     d3.json("data/yenn.json", function(data){
-                    dataYenn = data;
-                    d3.select('#PrimitiveLineGraphBox')
-                            .datum([data])
-                            .call(LineChart());
+                        YennGraph = LineChart().data([data]);
+                        d3.select('#PrimitiveLineGraphBox')
+                            .call(YennGraph);
                     
-                    d3.json("data/shani.json", function(data){
-                    dataShani = data;
-                    d3.select('#PrimitiveLineGraphBox')
-                            .datum([data])
-                            .call(LineChart());
+                        d3.json("data/shani.json", function(data){
+                            ShaniGraph = LineChart().data([data]);
+                            d3.select('#PrimitiveLineGraphBox')
+                                .call(ShaniGraph);
                     
-                    CreateCollectedGraphBox([]);
-              
+                            CollectedGraph = LineChart();
+                            d3.select('#CollectedLineGraphBox')
+                                .call(CollectedGraph);
+                        });
                     });
                 });
-            });
             
-            function CreateCollectedGraphBox(data){
-                d3.select('#CollectedLineGraphBox')
-                            .datum(data)
-                            .call(LineChart());
-            }
+                function CreateCollectedGraphBox(data){
+                    CollectedGraph.data(data);
+                }
                 
                 
 		</script>

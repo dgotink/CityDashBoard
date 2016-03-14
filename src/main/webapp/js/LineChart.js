@@ -1,13 +1,20 @@
-//go to https://bost.ocks.org/mike/chart/ for a detailed explanation
+//go to https://bost.ocks.org/mike/chart/ 
+//https://www.toptal.com/d3-js/towards-reusable-d3-js-charts
+//for more explanations
 function LineChart(){
-    //Width & height
+    //All the options that should be accesible to the caller
     var svgWidth = 800;
     var svgHeight = 250;
     var padding = 25;
+    var data = [];
+    
+    var updateWidth;
+    var updateHeight;
+    var updateData;
     
     function chart(selection){
-        selection.each(function(data) { 
-         //Make the map
+        selection.each(function() { 
+        //Make the map of the data
         var map = data.map(function (d) { return d.Data; });
                 
         //Variables needed for scale
@@ -33,6 +40,11 @@ function LineChart(){
             .scale(yScale)
             .orient("left")
             .ticks(6);
+    
+        //Line function
+        var line = d3.svg.line().interpolate("monotone")
+            .x(function(d){ return xScale(d.x); })
+            .y(function(d){ return yScale(d.y); })
 									 
         //Svg						 
         var svg = d3.select(this)
@@ -46,72 +58,129 @@ function LineChart(){
         if(this.id === "PrimitiveLineGraphBox"){
             svg.append("rect")
                 .data(data)
-                .attr("width", function() { return svgWidth/14 ; })
+                .attr("width", function() { return svgWidth/14 ; })         //there is no algorithm or formula for these values, just trial and error
                 .attr("height", function() { return svgHeight/6; })
                 .attr("x", function() { return svgWidth * 0.92; })
                 .attr("y", function() { return svgHeight * 0.03; })
                 .attr("fill", "rgb(0,0,0)")
                 .on('click', function(d) { swap(d); });	
-        
         }
             
         //Axis functions
         svg.append("g")
-            .attr("class", "axis")
+            .attr("class", "axis x")
             .attr("transform", "translate(0, " + (svgHeight - padding) + ")")
             .call(xAxis);
 		   
         svg.append("g")
-            .attr("class", "axis")
+            .attr("class", "axis y")
             .attr("transform", "translate(" + padding + ",0)")
             .call(yAxis);
 
-        var pathContainers = svg.selectAll('g.line')
+        var container = svg.selectAll('g.line')
             .data(data);
 	
-        pathContainers.enter().append('g')
+        container.enter().append('g')
             .attr('stroke', function(d) { return d.Color; })
             .attr('class', 'line');
 	
         //Draw the lines    
-        pathContainers.selectAll('path')
-            .data(function(d) { return [d.Data]; }) // continues the data from the pathContainer
+        container.selectAll('path')
+            .data(function(d) { return [d.Data]; }) // continues the data from the container
             .enter().append('path')
-            .attr('d', d3.svg.line()
-                .x(function (d) { return xScale(d.x); })
-                .y(function (d) { return yScale(d.y); })
-                .interpolate("monotone")
-            );
+            .attr('d', line);
 		
         // Add circles
-        pathContainers.selectAll('circle')
+        container.selectAll('circle')
             .data(function(d) { return d.Data; })
             .enter().append('circle')
             .attr('cx', function (d) { return xScale(d.x); })
             .attr('cy', function (d) { return yScale(d.y); })
             .attr('r', 5);
     
-        });
+        //update functions
+        updateWidth = function() {
+            xScale.range([padding, svgWidth - padding]);
+            svg.transition().duration(1000).attr('width', svgWidth);
+        };
         
+        updateHeight = function() {
+            yScale.range([svgHeight - padding, padding]);
+            svg.transition().duration(1000).attr('height', svgHeight);
+        };
+        
+        updateData = function() {
+            map = data.map(function (d) { return d.Data; });
+            
+            //update the scale
+            xExtents = d3.extent(d3.merge(map), function (d) { return d.x; });
+            yExtents = d3.extent(d3.merge(map), function (d) { return d.y; });
+            xScale.domain([xExtents[0], xExtents[1]]);
+            yScale.domain([yExtents[0], yExtents[1]]);
+            
+            // Update the Axis
+            var xAxis = d3.svg.axis().scale(xScale).orient("bottom").ticks(8);
+            var yAxis = d3.svg.axis().scale(yScale).orient("left").ticks(6);
+
+            svg.selectAll('g.x.axis')
+                .call(xAxis)
+
+            svg.selectAll('g.y.axis')
+                .call(yAxis);
+        
+            svg.selectAll('.line').remove();
+                  
+            var container = svg.selectAll('g.line')
+                .data(data);
+        
+            //enter
+            container.enter().append('g')
+                .attr('stroke', function(d) { return d.Color; })
+                .attr('class', 'line');
+	
+            //Draw the lines    
+            container.selectAll('path')
+                .data(function(d) { return [d.Data]; }) // continues the data from the pathContainer
+                .enter().append('path')
+                .attr('d', line);
+		
+            // Add circles
+            container.selectAll('circle')
+                .data(function(d) { return d.Data; })
+                .enter().append('circle')
+                .attr('cx', function (d) { return xScale(d.x); })
+                .attr('cy', function (d) { return yScale(d.y); })
+                .attr('r', 5);
+            };
+        });  
     }
     
+    chart.data = function(value) {
+    	if (!arguments.length) return data;
+    	data = value;
+    	if (typeof updateData === 'function') updateData();
+    	return chart;
+    };
+        
     chart.width = function(value) {
         if (!arguments.length) return svgWidth;
         svgWidth = value;
+        if (typeof updateWidth === 'function') updateWidth();
         return chart;
-    	};
+    };
  
-    	chart.height = function(value) {
-            if (!arguments.length) return svgHeight;
-            svgHeight = value;
-            return chart;
-    	};
+    chart.height = function(value) {
+        if (!arguments.length) return svgHeight;
+        svgHeight = value;
+        if (typeof updateHeight === 'function') updateHeight();
+        return chart;
+    };
  
-        chart.padding = function(value) {
-            if (!arguments.length) return padding;
-            padding = value;
-            return chart;
-    	};
+    chart.padding = function(value) {
+        if (!arguments.length) return padding;
+        padding = value;
+        return chart;
+    };
     
     return chart;
     
