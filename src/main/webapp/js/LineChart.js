@@ -41,6 +41,11 @@ function LineChart(){
             .orient("left")
             .ticks(6);
     
+        //Line function for transition (sets all the y values on the x axis (svgHeight - padding)
+        var transline = d3.svg.line().interpolate("monotone")
+            .x(function(d){ return xScale(d.x); })
+            .y(function(d){ return svgHeight - padding; })
+    
         //Line function
         var line = d3.svg.line().interpolate("monotone")
             .x(function(d){ return xScale(d.x); })
@@ -78,16 +83,19 @@ function LineChart(){
             .call(yAxis);
 
         var container = svg.selectAll('g.line')
-            .data(data);
-	
+                .data(data);
+        
+        //enter
         container.enter().append('g')
             .attr('stroke', function(d) { return d.Color; })
             .attr('class', 'line');
 	
         //Draw the lines    
         container.selectAll('path')
-            .data(function(d) { return [d.Data]; }) // continues the data from the container
+            .data(function(d) { return [d.Data]; }) // continues the data from the pathContainer
             .enter().append('path')
+            .attr('d', transline)
+            .transition().duration(2000)
             .attr('d', line);
 		
         // Add circles
@@ -95,8 +103,10 @@ function LineChart(){
             .data(function(d) { return d.Data; })
             .enter().append('circle')
             .attr('cx', function (d) { return xScale(d.x); })
-            .attr('cy', function (d) { return yScale(d.y); })
-            .attr('r', 5);
+            .attr('cy', svgHeight - padding)
+            .attr('r', 5)
+            .transition().duration(2000)
+            .attr('cy', function (d) { return yScale(d.y); });
     
         //update functions
         updateWidth = function() {
@@ -142,6 +152,8 @@ function LineChart(){
             container.selectAll('path')
                 .data(function(d) { return [d.Data]; }) // continues the data from the pathContainer
                 .enter().append('path')
+                .attr('d', transline)
+                .transition().duration(2000)
                 .attr('d', line);
 		
             // Add circles
@@ -149,8 +161,11 @@ function LineChart(){
                 .data(function(d) { return d.Data; })
                 .enter().append('circle')
                 .attr('cx', function (d) { return xScale(d.x); })
-                .attr('cy', function (d) { return yScale(d.y); })
-                .attr('r', 5);
+                .attr('cy', svgHeight - padding)
+                .attr('r', 5)
+                .transition().duration(2000)
+                .attr('cy', function (d) { return yScale(d.y); });
+ 
             };
         });  
     }
