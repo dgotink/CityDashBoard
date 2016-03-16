@@ -3,8 +3,9 @@
 	<head>
 		<meta charset="utf-8">
 		<script src="http://d3js.org/d3.v3.min.js"></script>
-                <script src="js/LineChart.js"></script>
-                <script src="js/Data.js"></script>
+                <script src="js/linechart.js"></script>
+                <script src="js/data.js"></script>
+                <script src="js/fisheye.js"></script>
 		<style type="text/css">
 		
 		.line {
@@ -27,6 +28,29 @@
                     margin: 20px;
                     border-style: outset;
 		}
+                
+                .slider .domain {
+                    fill: none;
+                    stroke: #000;
+                    stroke-opacity: .3;
+                    stroke-width: 6px;
+                    stroke-linecap: round;
+                }
+
+                .slider .halo {
+                    fill: none;
+                    stroke: #ddd;
+                    stroke-width: 4px;
+                    stroke-linecap: round;
+                }
+
+                .slider .handle {
+                    fill: #fff;
+                    stroke: #000;
+                    stroke-opacity: .5;
+                    stroke-width: 1.25px;
+                    cursor: crosshair;
+                }
 		
 		</style>
 	</head>
@@ -41,13 +65,27 @@
                 var ShaniGraph;
                 var CollectedGraph;
                 
+                 var trissData = [];
+                 for(var i = 0; i < 100; i++){
+                    trissData.push({"x": i, "y": Math.round(Math.random() * 20 + 50)});
+                }
+                var triss = [{"Name": "Triss", "Color": "red", "Data": trissData}];
+                
+                var yennData = [];
+                 for(var i = 0; i < 100; i++){
+                    yennData.push({"x": i, "y": Math.round(Math.random() * 30) + 30});
+                }
+                var yenn = [{"Name": "Yenn", "Color": "purple", "Data": yennData}];
+               
+                
                 d3.json("data/triss.json", function(data){
-                    TrissGraph = LineChart().data([data]);
+                    TrissGraph = LineChart().data(triss);
                     d3.select('#PrimitiveLineGraphBox')
                         .call(TrissGraph);
                     
                     d3.json("data/yenn.json", function(data){
-                        YennGraph = LineChart().data([data]);
+                        
+                        YennGraph = LineChart().data(yenn);
                         d3.select('#PrimitiveLineGraphBox')
                             .call(YennGraph);
                     
@@ -56,7 +94,7 @@
                             d3.select('#PrimitiveLineGraphBox')
                                 .call(ShaniGraph);
                     
-                            CollectedGraph = LineChart();
+                            CollectedGraph = LineChart().height(400);
                             d3.select('#CollectedLineGraphBox')
                                 .call(CollectedGraph);
                         });
