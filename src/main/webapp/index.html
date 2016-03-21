@@ -64,26 +64,13 @@
                 var YennGraph;
                 var ShaniGraph;
                 var CollectedGraph;
-                
-                 var trissData = [];
-                 for(var i = 0; i < 100; i++){
-                    trissData.push({"x": i, "y": Math.round(Math.random() * 20 + 50)});
-                }
-                var triss = [{"Name": "Triss", "Color": "red", "Data": trissData}];
-                
-                var yennData = [];
-                 for(var i = 0; i < 100; i++){
-                    yennData.push({"x": i, "y": Math.round(Math.random() * 30) + 30});
-                }
-                var yenn = [{"Name": "Yenn", "Color": "purple", "Data": yennData}];
-               
-                
+
                 d3.json("data/triss.json", function(data){
-                    TrissGraph = LineChart().data(triss);
+                    TrissGraph = LineChart().data([data]);
                     d3.select('#PrimitiveLineGraphBox')
                         .call(TrissGraph);
                     
-                    d3.json("data/yenn.json", function(data){
+                    /*d3.json("data/yenn.json", function(data){
                         
                         YennGraph = LineChart().data(yenn);
                         d3.select('#PrimitiveLineGraphBox')
@@ -98,7 +85,7 @@
                             d3.select('#CollectedLineGraphBox')
                                 .call(CollectedGraph);
                         });
-                    });
+                    });*/
                 });
             
                 function CreateCollectedGraphBox(data){
