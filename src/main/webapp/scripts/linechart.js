@@ -7,18 +7,19 @@ function LineChart(){
     var svgHeight = 350;
     var padding = 25;
     var data = [];
+    var distortion = true;
     
     var updateWidth;
     var updateHeight;
-    var updateData;
+    var updateData;    
     
     //Defining time format
-    var timeFormat = d3.time.format('%Y-%m-%dT%H:%M:%S');
+    var timeFormat = d3.time.format("%Y-%m-%dT%H:%M:%S.%LZ");
     
     function chart(selection){
         selection.each(function() { 
         //Variables needed for scale
-        var map = data.map(function (d) { return d.Data; });
+        var map = data.map(function (d) { return d.data; });
         var merged = d3.merge(map);
         var mapX = merged.map(function(d) { return timeFormat.parse(d.x); });
         var mapY = merged.map(function(d) { return d.y; });
@@ -104,6 +105,24 @@ function LineChart(){
                 .attr("fill", "rgb(0,0,0)")
                 .on('click', function(d) { swap(d); });	
         }
+        
+        //add a button to turn the distortion on or off
+        svg.append("rect")
+            .attr("width", function() { return svgWidth/14 ; })
+            .attr("height", function() { return svgHeight/6; })
+            .attr("x", function() { return svgWidth * 0.92; })
+            .attr("y", function() { return svgHeight * 0.03 + 5 + svgHeight/6; })
+            .attr("fill", "rgb(0,255,255)")
+            .on("click", function() { 
+                if(distortion) {
+                    distortion = false;
+                    updateDistortion();
+                }
+                else {
+                    distortion = true;
+                    updateDistortion(true);
+                }
+        });
             
         //Axis functions
         svg.append("g")
@@ -161,20 +180,20 @@ function LineChart(){
         
         //enter
         container.enter().append('g')
-            .attr('stroke', function(d) { return d.Color; })
+            .attr('stroke', function(d) { return d.color; })
             .attr('class', 'line');
 	
         //Draw the lines    
         container.selectAll('path')
-            .data(function(d) { return [d.Data]; }) // continues the data from the pathContainer
+            .data(function(d) { return [d.data]; }) // continues the data from the pathContainer
             .enter().append('path')
             .attr('d', transline)
             .transition().duration(1500)
             .attr('d', line);
 		
         // Add circles
-        container.selectAll('circle')
-            .data(function(d) { return d.Data; })
+        /*container.selectAll('circle')
+            .data(function(d) { return d.data; })
             .enter().append('circle')
             .attr('cx', function (d) { return xScale(timeFormat.parse(d.x)); })
             .attr('cy', svgHeight - padding - padding)
@@ -186,7 +205,7 @@ function LineChart(){
             .append("svg:title")
             .text(function(d) { return d.x + "--" + d.y ; })
             .attr("x", function (d) { return xScale(timeFormat.parse(d.x)); })
-            .attr("y", function (d) { return yScale(d.y); });
+            .attr("y", function (d) { return yScale(d.y); });*/
         
         //update the carthesian distortian according to the new x value
         function brushedX() {
@@ -198,12 +217,13 @@ function LineChart(){
                 container.selectAll('path')
                     .attr('d', line);
                 container.selectAll('circle')
-                    .attr('cx', function (d) { return xScale(timeFormat.parse(d.x)); })
+                    .attr('cx', function (d) { return xScale(timeFormat.parse(d.x)); });
                 svg.selectAll('g.x.axis')
                     .call(xAxis);
             } else {
                 xScale.distortion(3).focus(xScale.range()[0]);
                 svg.selectAll('g.x.axis')
+                    .transition().duration(1500)
                     .call(xAxis);
             }   
         };
@@ -217,7 +237,7 @@ function LineChart(){
                 container.selectAll('path')
                     .attr('d', line);
                 container.selectAll('circle')
-                    .attr('cy', function (d) { return yScale(d.y); })
+                    .attr('cy', function (d) { return yScale(d.y); });
                 svg.selectAll('g.y.axis')
                     .call(yAxis);
             } else {
@@ -241,28 +261,127 @@ function LineChart(){
             svg.transition().duration(1000).attr('height', svgHeight);
         };
         
+        function updateDistortion() {
+            if(!distortion){
+                //Scales
+                xScale = d3.time.scale.utc()
+                    .domain([xExtent[0], xExtent[1]])
+                    .range([padding, svgWidth - padding]);
+							 
+                yScale = d3.scale.linear()
+                    .domain([yExtent[0], yExtent[1]])
+                    .range([svgHeight - padding, padding]);
+            
+                // Update the Axis
+                xAxis = d3.svg.axis().scale(xScale).orient("bottom").ticks(8);
+                yAxis = d3.svg.axis().scale(yScale).orient("left").ticks(6);
+            
+                svg.selectAll('g.x.axis')
+                    .transition().duration(1500)
+                    .attr("transform", "translate(0, " + (svgHeight - padding) + ")")
+                    .call(xAxis);
+
+                svg.selectAll('g.y.axis')
+                   .transition().duration(1500)
+                   .attr("transform", "translate(" + padding + ",0)")
+                   .call(yAxis);    
+            
+                svg.selectAll("g.slider").remove();
+                svg.selectAll("g.handle").remove();
+                svg.selectAll("g.halo").remove();
+ 
+            } else {
+                //Scales
+                xScale = d3.fisheye.scale(d3.time.scale.utc)
+                    .domain([xExtent[0], xExtent[1]])
+                    .range([padding + padding, svgWidth - padding]);
+							 
+                yScale = d3.fisheye.scale(d3.scale.linear)
+                    .domain([yExtent[0], yExtent[1]])
+                    .range([svgHeight - padding - padding, padding]); 
+            
+                svg.append("g")
+                    .attr("class", "slider x")
+                    .attr("transform", "translate(0, " + (svgHeight - padding) + ")")
+                    .call(xSliderAxis)
+                    .select(".domain")
+                    .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+                    .attr("class", "halo");
+    
+                svg.append("g")
+                    .attr("class", "slider y")
+                    .attr("transform", "translate(" + padding + ",0)")
+                    .call(ySliderAxis)
+                    .select(".domain")
+                    .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+                    .attr("class", "halo");
+    
+                //Sliders
+                xSlider = svg.append("g")
+                    .attr("class", "slider")
+                    .call(xBrush);
+        
+                ySlider = svg.append("g")
+                    .attr("class", "slider")
+                    .call(yBrush);
+            
+                xHandle = xSlider.append("circle")
+                    .attr("class", "handle")
+                    .attr("transform", "translate(" + (padding + padding) + ", " + (svgHeight - padding) + ")")
+                    .attr("r", 9);
+    
+                yHandle = ySlider.append("circle")
+                    .attr("class", "handle")
+                    .attr("transform", "translate(" + padding + "," + padding  + ")")
+                    .attr("r", 9);
+            
+                xSlider.call(xBrush.event);
+                ySlider.call(yBrush.event);
+                
+                // Update the Axis
+                xAxis = d3.svg.axis().scale(xScale).orient("bottom").ticks(8);
+                yAxis = d3.svg.axis().scale(yScale).orient("left").ticks(6);
+            
+                svg.selectAll('g.x.axis')
+                    .transition().duration(1500)
+                    .attr("transform", "translate(0, " + (svgHeight - padding - padding) + ")")
+                    .call(xAxis);
+
+                svg.selectAll('g.y.axis')
+                   .transition().duration(1500)
+                   .attr("transform", "translate(" + padding *2+ ",0)")
+                   .call(yAxis);    
+            }
+            updateData();
+        };
+        
         updateData = function() {
-            map = data.map(function (d) { return d.Data; });
+            map = data.map(function (d) { return d.data; });
+            merged = d3.merge(map);
+            mapX = merged.map(function(d) { return timeFormat.parse(d.x); });
+            mapY = merged.map(function(d) { return d.y; });
+            xExtent = d3.extent(mapX);
+            yExtent = d3.extent(mapY);
             
             //update the scale
-            xExtents = d3.extent(d3.merge(map), function (d) { return d.x; });
-            yExtents = d3.extent(d3.merge(map), function (d) { return d.y; });
-            xScale.domain([xExtents[0], xExtents[1]]);
-            yScale.domain([yExtents[0], yExtents[1]]);
-            xSliderScale.domain([xExtents[0], xExtents[1]]);
-            ySliderScale.domain([yExtents[0], yExtents[1]]);
+            xScale.domain([xExtent[0], xExtent[1]]);
+            yScale.domain([yExtent[0], yExtent[1]]);
+            xSliderScale.domain([xExtent[0], xExtent[1]]);
+            ySliderScale.domain([yExtent[0], yExtent[1]]);
             
             // Update the Axis
             var xAxis = d3.svg.axis().scale(xScale).orient("bottom").ticks(8);
             var yAxis = d3.svg.axis().scale(yScale).orient("left").ticks(6);
 
-            svg.selectAll('g.x.axis')
-                .transition().duration(1500)
-                .call(xAxis);
+           svg.selectAll('g.x.axis')
+                    .transition().duration(1500)
+                    .attr("transform", "translate(0, " + (svgHeight - padding) + ")")
+                    .call(xAxis);
 
-            svg.selectAll('g.y.axis')
-                .transition().duration(1500)
-                .call(yAxis);
+                svg.selectAll('g.y.axis')
+                   .transition().duration(1500)
+                   .attr("transform", "translate(" + padding + ",0)")
+                   .call(yAxis);    
        
             //container.remove();
                   
@@ -272,36 +391,36 @@ function LineChart(){
         
             //UPDATE
             container.selectAll('path')
-                .data(function(d) { return [d.Data]; })
+                .data(function(d) { return [d.data]; })
                 .transition().duration(1500)
                 .attr('d', line);
         
-             container.selectAll('circle')
-                .data(function(d) { return d.Data; })
+            /*container.selectAll('circle')
+                .data(function(d) { return d.data; })
                 .transition().duration(1500)
                 .attr('cx', function (d) { return xScale(timeFormat.parse(d.x)); })
-                .attr('cy', function (d) { return yScale(d.y); });
+                .attr('cy', function (d) { return yScale(d.y); });*/
         
             //ENTER
             container.enter().append('g')
-                .attr('stroke', function(d) { return d.Color; })
+                .attr('stroke', function(d) { return d.color; })
                 .attr('class', 'line');
 	
             container.selectAll('path')
-                .data(function(d) { return [d.Data]; }) // continues the data from the pathContainer
+                .data(function(d) { return [d.data]; }) // continues the data from the pathContainer
                 .enter().append('path')
                 .attr('d', transline)
                 .transition().duration(1500)
                 .attr('d', line);
               
-            container.selectAll('circle')
-                .data(function(d) { return d.Data; })
+            /*container.selectAll('circle')
+                .data(function(d) { return d.data; })
                 .enter().append('circle')
                 .attr('cx', function (d) { return xScale(timeFormat.parse(d.x)); })
                 .attr('cy', svgHeight - padding - padding)
                 .attr('r', 2)
                 .transition().duration(1500)
-                .attr('cy', function (d) { return yScale(d.y); });
+                .attr('cy', function (d) { return yScale(d.y); });*/
         
             //EXIT
             container.exit().remove();

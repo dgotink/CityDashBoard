@@ -3,9 +3,12 @@
 	<head>
 		<meta charset="utf-8">
 		<script src="http://d3js.org/d3.v3.min.js"></script>
-                <script src="js/linechart.js"></script>
-                <script src="js/data.js"></script>
-                <script src="js/fisheye.js"></script>
+                <script src="scripts/require.js"></script>
+                <script src="scripts/linechart.js"></script>
+                <script src="scripts/data.js"></script>
+                <script src="scripts/filter.js"></script>
+                <script src="scripts/fisheye.js"></script>
+               
 		<style type="text/css">
 		
 		.line {
@@ -60,15 +63,17 @@
             <div id="CollectedLineGraphBox">
             </div>
 		<script type="text/javascript">
-                var TrissGraph;
-                var YennGraph;
-                var ShaniGraph;
-                var CollectedGraph;
+                var weatherGraph;
+                var collectedGraph;
+                
+                //var filter = require('./filter.js')
+                filterData('red', 'created_at.$date', 'temperature', './data/weather_leuven.json', toLineChart );
 
-                d3.json("data/triss.json", function(data){
-                    TrissGraph = LineChart().data([data]);
+                function toLineChart(data){
+                    
+                    weatherGraph = LineChart().data([data]);
                     d3.select('#PrimitiveLineGraphBox')
-                        .call(TrissGraph);
+                        .call(weatherGraph);
                     
                     /*d3.json("data/yenn.json", function(data){
                         
@@ -86,10 +91,10 @@
                                 .call(CollectedGraph);
                         });
                     });*/
-                });
+                }
             
                 function CreateCollectedGraphBox(data){
-                    CollectedGraph.data(data);
+                    collectedGraph.data(data);
                 }
                 
                 
