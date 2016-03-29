@@ -3,12 +3,11 @@
 	<head>
 		<meta charset="utf-8">
 		<script src="http://d3js.org/d3.v3.min.js"></script>
-                <script src="scripts/require.js"></script>
                 <script src="scripts/linechart.js"></script>
                 <script src="scripts/data.js"></script>
                 <script src="scripts/filter.js"></script>
                 <script src="scripts/fisheye.js"></script>
-               
+               <script src="scripts/herschreven.js"></script>
 		<style type="text/css">
 		
 		.line {
@@ -63,34 +62,25 @@
             <div id="CollectedLineGraphBox">
             </div>
 		<script type="text/javascript">
-                var weatherGraph;
+                var leuvenGraph;
+                var antwerpenGraph;
+                var ghentGraph;
                 var collectedGraph;
                 
-                //var filter = require('./filter.js')
-                filterData('red', 'created_at.$date', 'temperature', './data/weather_leuven.json', toLineChart );
+                //filterData('black', 'loc', 'text', './data/twitter_isGeo.json', leuvenGraph, '#PrimitiveLineGraphBox', toLineChart);
+                
+                filterData('red', 'created_at.$date', 'temperature', './data/weather_leuven.json', leuvenGraph, '#PrimitiveLineGraphBox', toLineChart );
+                filterData('green', 'created_at.$date', 'temperature', './data/weather_antwerp.json', antwerpenGraph, '#PrimitiveLineGraphBox', toLineChart );
+                filterData('purple', 'created_at.$date', 'temperature', './data/weather_ghent.json', ghentGraph, '#PrimitiveLineGraphBox', toLineChart );
+             
+                collectedGraph = LineChart().height(400);
+                                 d3.select('#CollectedLineGraphBox')
+                                    .call(collectedGraph);
 
-                function toLineChart(data){
-                    
-                    weatherGraph = LineChart().data([data]);
-                    d3.select('#PrimitiveLineGraphBox')
-                        .call(weatherGraph);
-                    
-                    /*d3.json("data/yenn.json", function(data){
-                        
-                        YennGraph = LineChart().data(yenn);
-                        d3.select('#PrimitiveLineGraphBox')
-                            .call(YennGraph);
-                    
-                        d3.json("data/shani.json", function(data){
-                            ShaniGraph = LineChart().data([data]);
-                            d3.select('#PrimitiveLineGraphBox')
-                                .call(ShaniGraph);
-                    
-                            CollectedGraph = LineChart().height(400);
-                            d3.select('#CollectedLineGraphBox')
-                                .call(CollectedGraph);
-                        });
-                    });*/
+                function toLineChart(object, element, data){
+                    object = herschreven().data([data]);
+                    d3.select(element)
+                            .call(object);
                 }
             
                 function CreateCollectedGraphBox(data){

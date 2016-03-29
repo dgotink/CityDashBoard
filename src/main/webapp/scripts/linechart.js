@@ -63,8 +63,7 @@ function LineChart(){
     					  
         var yAxis = d3.svg.axis()
             .scale(yScale)
-            .orient("left")
-            .tickValues(mapY);
+            .orient("left");
     
         var xSliderAxis = d3.svg.axis()
             .scale(xSliderScale)
@@ -77,12 +76,12 @@ function LineChart(){
             .ticks(0);
     
         //Line function for transition (sets all the y values on the x axis (svgHeight - padding)
-        var transline = d3.svg.line().interpolate("monotone")
+        var transline = d3.svg.line().interpolate("basis")
             .x(function(d){ return xScale(timeFormat.parse(d.x)); })
             .y(function(){ return svgHeight - padding - padding; });
     
         //Line function
-        var line = d3.svg.line().interpolate("monotone")
+        var line = d3.svg.line().interpolate("basis")
             .x(function(d){ return xScale(timeFormat.parse(d.x)); })
             .y(function(d){ return yScale(d.y); });
 									 
@@ -278,12 +277,12 @@ function LineChart(){
             
                 svg.selectAll('g.x.axis')
                     .transition().duration(1500)
-                    .attr("transform", "translate(0, " + (svgHeight - padding) + ")")
+                    //.attr("transform", "translate(0, " + (svgHeight - padding) + ")")
                     .call(xAxis);
 
                 svg.selectAll('g.y.axis')
                    .transition().duration(1500)
-                   .attr("transform", "translate(" + padding + ",0)")
+                   //.attr("transform", "translate(" + padding + ",0)")
                    .call(yAxis);    
             
                 svg.selectAll("g.slider").remove();
@@ -375,19 +374,18 @@ function LineChart(){
 
            svg.selectAll('g.x.axis')
                     .transition().duration(1500)
-                    .attr("transform", "translate(0, " + (svgHeight - padding) + ")")
+                    //.attr("transform", "translate(0, " + (svgHeight - padding) + ")")
                     .call(xAxis);
 
                 svg.selectAll('g.y.axis')
                    .transition().duration(1500)
-                   .attr("transform", "translate(" + padding + ",0)")
+                   //.attr("transform", "translate(" + padding + ",0)")
                    .call(yAxis);    
        
             //container.remove();
                   
             container = svg.selectAll('g.line')
-                .data(data, name)
-                .attr('d', line);
+                .data(data, name);
         
             //UPDATE
             container.selectAll('path')
@@ -407,7 +405,7 @@ function LineChart(){
                 .attr('class', 'line');
 	
             container.selectAll('path')
-                .data(function(d) { return [d.data]; }) // continues the data from the pathContainer
+                .data(function(d) { return [d.data]; }) // continues the data from the container
                 .enter().append('path')
                 .attr('d', transline)
                 .transition().duration(1500)
@@ -458,7 +456,7 @@ function LineChart(){
     
     //because binding the data by index will not work, we bind the data by name. this funcion is called for the keys (names)
     function name(d){
-        return d.Name;
+        return d.name;
     }
     
     return chart;
