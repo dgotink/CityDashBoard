@@ -84,7 +84,7 @@ function herschreven() {
                      if(distortion.indexOf('x') === -1)
                         distortion += 'x';
                      else
-                         distortion.replace('x', '');
+                        distortion = distortion.replace(/x/g, '');
                      updateDistortionX();    
                 });
             
@@ -125,13 +125,11 @@ function herschreven() {
                     xScale = d3.fisheye.scale(d3.time.scale.utc)
                         .domain(d3.extent(mapX))
                         .range([padding + padding, width - padding]);
-                    yScale = d3.scale.linear()
-                        .domain(d3.extent(mapY))
+                    yScale
                         .range([height - padding - padding, padding]);
                 }
                 else if(distortion.indexOf('y') !== -1) {
-                    xScale = d3.time.scale.utc()
-                        .domain(d3.extent(mapX))
+                    xScale 
                         .range([padding + padding, width - padding]);
                     yScale = d3.fisheye.scale(d3.scale.linear)
                         .domain(d3.extent(mapY))
@@ -324,7 +322,10 @@ function herschreven() {
                 //create the new scale
                 scale();
                 //create or delete the sliders if necessary
-                if(distortion.indexOf('x') !== -1) sliderX();
+                if(distortion.indexOf('x') !== -1) {
+                    sliderX();
+                    brushedX();
+                }
                 else {
                    svg.selectAll("g.slider").remove();
                    svg.selectAll("g.handle").remove();
