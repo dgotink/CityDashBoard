@@ -73,7 +73,7 @@
                 filterData('green', 'created_at.$date', 'temperature', './data/weather_antwerp.json', antwerpenGraph, '#PrimitiveLineGraphBox', toLineChart );
                 filterData('purple', 'created_at.$date', 'temperature', './data/weather_ghent.json', ghentGraph, '#PrimitiveLineGraphBox', toLineChart );
              
-                collectedGraph = LineChart().height(400);
+                collectedGraph = herschreven();
                                  d3.select('#CollectedLineGraphBox')
                                     .call(collectedGraph);
 

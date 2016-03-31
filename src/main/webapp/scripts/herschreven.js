@@ -41,10 +41,12 @@ function herschreven() {
             var xHandle,
                 yHandle;
             //the last known x, y slider value
-            var lastX = 0,
-                lastY = 0;       
+            var lastX = padding + padding, //this value puts the lastX on the left of the xSliderAxis
+                lastY = height - padding - padding; //this value puts the lastY on the bottom of the ySliderAxis
             //the container which holds all the lines
             var container;
+            //the element to which the svg is assigned
+            var element = this;
             
             //time parser
             var timeFormat = d3.time.format("%Y-%m-%dT%H:%M:%S.%LZ");
@@ -59,51 +61,73 @@ function herschreven() {
                 .attr("width", width)
                 .attr("height", height)
                 .attr("class", "svgbox");
-        
-            //if the id of the container is primitive, it can be added to the arr of the data of the collectedlinegraphbox
-            //this will add a rect with a onclick event that swaps (add/remove) the data from the Data arr
-            if(this.id === "PrimitiveLineGraphBox"){
-                svg.append("rect")
-                    .data(data)
-                    .attr("width", function() { return width/14 ; })         //there is no algorithm or formula for these values, just values that seemed to work
-                    .attr("height", function() { return height/6; })
-                    .attr("x", function() { return width * 0.92; })
-                    .attr("y", function() { return height * 0.03; })
-                    .attr("fill", "rgb(0,0,0)")
-                    .on('click', function(d) { swap(d); });	
-            }
-            
-            //add a button to turn the distortion on or off for x, y
-            svg.append("rect")
-                .attr("width", function() { return width/14 ; })
-                .attr("height", function() { return height/6; })
-                .attr("x", function() { return width * 0.92; })
-                .attr("y", function() { return height * 0.03 + 5 + height/6; })
-                .attr("fill", "rgb(0,255,255)")
-                .on("click", function() { 
-                     if(distortion.indexOf('x') === -1)
-                        distortion += 'x';
-                     else
-                        distortion = distortion.replace(/x/g, '');
-                     updateDistortionX();    
-                });
-            
+
             calculateMapXY();
             scale();
             axis();
             appendAxis();
             draw();
+            addButtons();
             
-            //TODO : ADD THE BUTTON TO SWAP THE CARTHESIAN DISTORTION
+            //adds buttons for switching distortion, melding
+            function addButtons(){
+                //vars that determine the size of the buttons
+                var edge = 20;
+                var margin = 10;
+                //if the id of the container is primitive, it can be added to the arr of the data of the collectedlinegraphbox
+                //this will add a rect with a onclick event that swaps (add/remove) the data from the Data arr (data.js)
+                if(element.id === "PrimitiveLineGraphBox"){
+                    svg.append("rect")
+                        .data(data)
+                        .attr("width", function() { return edge ; })
+                        .attr("height", function() { return edge; })
+                        .attr("x", function() { return width - margin - edge; })
+                        .attr("y", function() { return margin; })
+                        .attr("fill", "rgb(0,0,0)")
+                        .on('click', function(d) { swap(d); });	
+                }
             
+                //add a button to turn the distortion on or off for x
+                svg.append("rect")
+                    .attr("width", function() { return edge ; })
+                    .attr("height", function() { return edge; })
+                    .attr("x", function() {  return width - margin - edge; })
+                    .attr("y", function() { return margin + edge + margin/2; })
+                    .attr("fill", "rgb(0,255,255)")
+                    .on("click", function() { 
+                        if(distortion.indexOf('x') === -1)
+                            distortion += 'x';
+                        else
+                            distortion = distortion.replace(/x/g, '');
+                        updateDistortionX();    
+                }); 
+                
+                //add a button to turn the distortion on or off for y
+                svg.append("rect")
+                    .attr("width", function() { return edge ; })
+                    .attr("height", function() { return edge; })
+                    .attr("x", function() {  return width - margin/2 - edge - margin - edge; })
+                    .attr("y", function() { return margin; })
+                    .attr("fill", "rgb(255,0,255)")
+                    .on("click", function() { 
+                        if(distortion.indexOf('y') === -1)
+                            distortion += 'y';
+                        else
+                            distortion = distortion.replace(/y/g, '');
+                        updateDistortionY();    
+                }); 
+            }
+            
+            //calculates the mapX and the mapY from the data
             function calculateMapXY() {
                 var mergedMap = d3.merge(data.map(function (d) { return d.data; }));
                 mapX = mergedMap.map(function(d) { return timeFormat.parse(d.x); });
                 mapY = mergedMap.map(function(d) { return d.y; });
             }
             
+            //calculates the scale and the things that are only dependent on the scale (line & brush)
             function scale() {
-                //scales
+                //standard scales
                 xScale = d3.time.scale.utc()
                     .domain(d3.extent(mapX))
                     .range([padding, width - padding]);
@@ -113,6 +137,7 @@ function herschreven() {
                     .range([height - padding, padding]);
             
                 //check for x, y distortion and update scale where necessary
+                //distortion = xy
                 if(distortion.indexOf('x') !== -1 && distortion.indexOf('y') !== -1){
                     xScale = d3.fisheye.scale(d3.time.scale.utc)
                         .domain(d3.extent(mapX))
@@ -121,6 +146,7 @@ function herschreven() {
                         .domain(d3.extent(mapY))
                         .range([height - padding - padding, padding]);
                 }
+                //distortion = x
                 else if(distortion.indexOf('x') !== -1){
                     xScale = d3.fisheye.scale(d3.time.scale.utc)
                         .domain(d3.extent(mapX))
@@ -128,6 +154,7 @@ function herschreven() {
                     yScale
                         .range([height - padding - padding, padding]);
                 }
+                //distortion = y
                 else if(distortion.indexOf('y') !== -1) {
                     xScale 
                         .range([padding + padding, width - padding]);
@@ -156,7 +183,7 @@ function herschreven() {
                     .x(function(d){ return xScale(timeFormat.parse(d.x)); })
                     .y(function(d){ return yScale(d.y); });
             
-                //brushes
+                //brushes (makes the slider interactable)
                 xBrush = d3.svg.brush()
                     .x(xSliderScale)
                     .on("brush", brushedX);
@@ -166,6 +193,7 @@ function herschreven() {
                     .on("brush", brushedY);
             };
 
+            //defines the axes
             function axis() {
                 xAxis = d3.svg.axis()
                     .scale(xScale)
@@ -186,8 +214,8 @@ function herschreven() {
                     .ticks(0);
             };
             
+            //add the standard axes to the svg element
             function appendAxis() {
-
                 svg.append("g")
                     .attr("class", "axis x")
                     .attr("transform", "translate(0, " + (height - padding) + ")")
@@ -199,6 +227,7 @@ function herschreven() {
                     .call(yAxis);
             };
             
+            //redraw the axes
             function updateAxis() {
                 axis();
                 var translate = "";
@@ -220,6 +249,7 @@ function herschreven() {
                     .call(yAxis);
             }
             
+            //append the x slider to the svg element
             function sliderX() {             
                 svg.append("g")
                     .attr("class", "slider x")
@@ -230,15 +260,16 @@ function herschreven() {
                     .attr("class", "halo");
 
                 xSlider = svg.append("g")
-                    .attr("class", "slider")
+                    .attr("class", "slider x")
                     .call(xBrush);
 
                 xHandle = xSlider.append("circle")
-                    .attr("class", "handle")
+                    .attr("class", "handle x")
                     .attr("transform", "translate(" + (padding + padding) + ", " + (height - padding) + ")")
                     .attr("r", 9);
             };
             
+            //append the y slider to the svg element
             function sliderY() {
                 svg.append("g")
                     .attr("class", "slider y")
@@ -249,15 +280,16 @@ function herschreven() {
                     .attr("class", "halo");
             
                 ySlider = svg.append("g")
-                    .attr("class", "slider")
+                    .attr("class", "slider y")
                     .call(yBrush);
             
                 yHandle = ySlider.append("circle")
-                    .attr("class", "handle")
+                    .attr("class", "handle y")
                     .attr("transform", "translate(" + padding + "," + padding  + ")")
                     .attr("r", 9);
             }
             
+            //draw the lines (update, enter, exit)
             function draw() {
                 //make the container for the lines and bind the data
                 container = svg.selectAll('g.line')
@@ -285,39 +317,51 @@ function herschreven() {
                 container.exit().remove();
             };  
             
-            //update the carthesian distortian according to the new x value
+            //redraw the slider, the axes, the line according to the new distortion value
             function brushedX() {
-                var valueSlider = xSliderScale.invert(lastX),
-                    valueDistort = lastX;
-                if (d3.event.sourceEvent) { // not a programmatic event
-                    valueSlider = xSliderScale.invert(d3.mouse(this)[0]);
-                    valueDistort = d3.mouse(this)[0];
-                    lastX = valueDistort;
-                }
-                    xHandle.attr("cx", xSliderScale(valueSlider) - padding - padding);
-                    xScale.distortion(3).focus(valueDistort);
+                //if the event is called by the program (not manually)
+                //set the lastX for the mouse position and draw the new line without animation
+                if (d3.event.sourceEvent) { 
+                    lastX = d3.mouse(this)[0];
+                    xScale.distortion(3).focus(lastX);
                     container.selectAll('path')
                         .attr('d', line);
-                    svg.selectAll('g.x.axis')
-                     .call(xAxis);
+                } else {
+                    //draw with animation
+                    xScale.distortion(3).focus(lastX);
+                    container.selectAll('path')
+                        .transition().duration(1500)
+                        .attr('d', line);
+                }
+                // do always
+                xHandle.attr("cx", lastX - padding - padding);
+                svg.selectAll('g.x.axis')
+                    .call(xAxis);
             };   
             
+            //redraw the slider, the axes, the line according to the new distortion value
             function brushedY() {
-                var valueSlider = xSliderScale.invert(lastY),
-                    valueDistort = lastY;
-                if (d3.event.sourceEvent) { // not a programmatic event
-                    valueSlider = xSliderScale.invert(d3.mouse(this)[1]);
-                    valueDistort = d3.mouse(this)[1];
-                    lastY = valueDistort;
+                //if the event is called by the program (not manually)
+                //set the vars for the mouse position and draw the new line without animation
+                if (d3.event.sourceEvent) { 
+                    lastY = d3.mouse(this)[1];
+                    yScale.distortion(3).focus(lastY);
+                    container.selectAll('path')
+                        .attr('d', line);
+                 } else {
+                    //draw with animation
+                    yScale.distortion(3).focus(lastY);
+                    container.selectAll('path')
+                        .transition().duration(1500)
+                        .attr('d', line);
                 }
-                yHandle.attr("cy", ySliderScale(valueSlider) - padding);
-                yScale.distortion(3).focus(valueDistort);
-                container.selectAll('path')
-                    .attr('d', line);
+                // do always
+                yHandle.attr("cy", lastY - padding);
                 svg.selectAll('g.y.axis')
                     .call(yAxis);
             };
             
+            //update the carthesian distortian according to the new x value
             function updateDistortionX() {
                 //create the new scale
                 scale();
@@ -327,14 +371,43 @@ function herschreven() {
                     brushedX();
                 }
                 else {
-                   svg.selectAll("g.slider").remove();
-                   svg.selectAll("g.handle").remove();
-                   svg.selectAll("g.halo").remove();
+                   svg.selectAll("g.x.slider").remove();
+                   svg.selectAll("g.x.handle").remove();
+                   svg.selectAll("g.x.halo").remove();
                 }
-                //update the axis to the new scale
+                //update the axis to the new scale & redraw
                 updateAxis();
                 draw();
             }
+            
+            //update the carthesian distortian according to the new y value
+            function updateDistortionY() {
+                //create the new scale
+                scale();
+                //create or delete the sliders if necessary
+                if(distortion.indexOf('y') !== -1) {
+                    sliderY();
+                    brushedX();
+                    brushedY();
+                }
+                else {
+                   svg.selectAll("g.y.slider").remove();
+                   svg.selectAll("g.y.handle").remove();
+                   svg.selectAll("g.y.halo").remove();
+                }
+                //update the axis to the new scale & redraw
+                updateAxis();
+                draw();
+            }
+            
+            //this function is called whenever the dataset changes
+            updateData = function (){
+                calculateMapXY();
+                scale();
+                axis();
+                appendAxis();
+                draw();
+            };
 
         });
         
