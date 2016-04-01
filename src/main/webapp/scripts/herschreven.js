@@ -73,9 +73,18 @@ function herschreven() {
                 .attr("width", width)
                 .attr("height", height)
                 .attr("class", "svgbox");
-        
+
             var focus = svg.append('g')
                 .attr("class", "focus");
+        
+            //append a clippath so lines can't exceed the focus box
+            focus.append("defs").append("clipPath")
+                .attr("id", "clip")
+                .append("rect")
+                    .attr("width", width - padding - padding)
+                    .attr("x", padding)
+                    .attr("height", height - padding - padding)
+                    .attr("y", padding);
         
             var context = svg.append('g')
                 .attr("class", "context");   
@@ -352,6 +361,12 @@ function herschreven() {
                     .attr("height", contextHeight);
             }
             
+            //update the existing brushcontext according to the new brush
+            function updateBrushContext() {
+                context.select("g.x.brush")
+                    .call(contextBrush);
+            }
+            
             //draw the lines (update, enter, exit)
             function draw() {
                 //make the container for the lines and bind the data
@@ -367,6 +382,7 @@ function herschreven() {
                 //create the new lines
                 focusContainer.enter().append('g')
                     .attr('stroke', function(d) { return d.color; })
+                    .attr('clip-path', 'url(#clip)')
                     .attr('class', 'line');
 	
                 focusContainer.selectAll('path')
@@ -452,9 +468,14 @@ function herschreven() {
             };
             
             function brushedContext() {
-                xScale.domain(contextBrush.empty() ? xContextScale.domain() : contextBrush.extent());
+                if(contextBrush.empty())
+                    xScale.domain(xContextScale.domain())
+                else
+                    xScale.domain(contextBrush.extent())
+                var extent = contextBrush.extent();
                 updateAxis();
-                draw();
+                focusContainer.selectAll('path')
+                    .attr('d', lineFocus);
             }
             
             //update the carthesian distortian according to the new x value
@@ -504,6 +525,7 @@ function herschreven() {
                 updateAxis();
                 draw();
                 drawContext();
+                updateBrushContext();
             };
 
         });
