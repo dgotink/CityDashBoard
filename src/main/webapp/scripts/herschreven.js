@@ -68,7 +68,7 @@ function herschreven() {
                 lineContext;
                 
             //create the SVG
-            var svg = d3.select(this)
+            var svg = d3.select(element)
                 .append("svg")
                 .attr("width", width)
                 .attr("height", height)

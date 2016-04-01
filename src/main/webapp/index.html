@@ -76,9 +76,9 @@
                 
                 //filterData('black', 'loc', 'text', './data/twitter_isGeo.json', leuvenGraph, '#PrimitiveLineGraphBox', toLineChart);
                 
-                filterData('red', 'created_at.$date', 'temperature', './data/weather_leuven.json', leuvenGraph, '#PrimitiveLineGraphBox', toLineChart );
-                filterData('green', 'created_at.$date', 'temperature', './data/weather_antwerp.json', antwerpenGraph, '#PrimitiveLineGraphBox', toLineChart );
-                filterData('purple', 'created_at.$date', 'temperature', './data/weather_ghent.json', ghentGraph, '#PrimitiveLineGraphBox', toLineChart );
+                filterDataAmount('red', 'created_at.$date', 'temperature', './data/weather_leuven.json', 100, leuvenGraph, '#PrimitiveLineGraphBox', toLineChart );
+                filterDataAmount('green', 'created_at.$date', 'temperature', './data/weather_antwerp.json', 100, antwerpenGraph, '#PrimitiveLineGraphBox', toLineChart );
+                filterDataAmount('purple', 'created_at.$date', 'temperature', './data/weather_ghent.json', 100, ghentGraph, '#PrimitiveLineGraphBox', toLineChart );
              
                 collectedGraph = herschreven();
                                  d3.select('#CollectedLineGraphBox')
