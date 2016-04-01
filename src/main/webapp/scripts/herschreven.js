@@ -51,7 +51,7 @@ function herschreven() {
                 yHandle;
             //the last known x, y slider value
             var lastX = padding + padding, //this value puts the lastX on the left of the xSliderAxis
-                lastY = height - padding - padding; //this value puts the lastY on the bottom of the ySliderAxis
+                lastY = focusHeight - padding - padding; //this value puts the lastY on the bottom of the ySliderAxis
             //the containers which holds all the lines
             var focusContainer,
                 contextContainer;
@@ -78,9 +78,9 @@ function herschreven() {
                 .attr("class", "focus");
         
             //append a clippath so lines can't exceed the focus box
-            focus.append("defs").append("clipPath")
+            var clip = focus.append("defs").append("clipPath")
                 .attr("id", "clip")
-                .append("rect")
+            var clipBox = clip.append("rect")
                     .attr("width", width - padding - padding)
                     .attr("x", padding)
                     .attr("height", height - padding - padding)
@@ -90,7 +90,7 @@ function herschreven() {
                 .attr("class", "context");   
 
             calculateMapXY();
-            scale();
+            initScale();
             axis();
             appendAxis();
             draw();
@@ -154,16 +154,8 @@ function herschreven() {
                 mapY = mergedMap.map(function(d) { return d.y; });
             }
             
-            //calculates the scale and the things that are only dependent on the scale (line & brush)
-            function scale() {
-                //standard scales
-                xScale = d3.time.scale.utc()
-                    .domain(d3.extent(mapX))
-                    .range([padding, width - padding]);
-            
-                yScale = d3.scale.linear()
-                    .domain(d3.extent(mapY))
-                    .range([focusHeight - padding, padding]);
+            function initScale(){
+                scaleNoDistortion();
             
                 xContextScale = d3.time.scale.utc()
                     .domain(d3.extent(mapX))
@@ -173,33 +165,6 @@ function herschreven() {
                     .domain(d3.extent(mapY))
                     .range([height - padding, padding + focusHeight + margin]);
             
-                //check for x, y distortion and update scale where necessary
-                //distortion = xy
-                if(distortion.indexOf('x') !== -1 && distortion.indexOf('y') !== -1){
-                    xScale = d3.fisheye.scale(d3.time.scale.utc)
-                        .domain(d3.extent(mapX))
-                        .range([padding + padding, width - padding]);
-                    yScale = d3.fisheye.scale(d3.scale.linear)
-                        .domain(d3.extent(mapY))
-                        .range([focusHeight - padding - padding, padding]);
-                }
-                //distortion = x
-                else if(distortion.indexOf('x') !== -1){
-                    xScale = d3.fisheye.scale(d3.time.scale.utc)
-                        .domain(d3.extent(mapX))
-                        .range([padding + padding, width - padding]);
-                    yScale
-                        .range([focusHeight - padding - padding, padding]);
-                }
-                //distortion = y
-                else if(distortion.indexOf('y') !== -1) {
-                    xScale 
-                        .range([padding + padding, width - padding]);
-                    yScale = d3.fisheye.scale(d3.scale.linear)
-                        .domain(d3.extent(mapY))
-                        .range([focusHeight - padding - padding, padding]);
-                }
-                
                 //sliderscales
                 xSliderScale = d3.scale.linear()
                     .domain(d3.extent(mapX))
@@ -239,8 +204,79 @@ function herschreven() {
                 
                 contextBrush = d3.svg.brush()
                     .x(xContextScale)
-                    .on("brush", brushedContext);
-                    
+                    .on("brush", brushedContext);        
+            }
+            
+            function scaleNoDistortion(){
+                xScale = d3.time.scale.utc()
+                    .domain(d3.extent(mapX))
+                    .range([padding, width - padding]);
+            
+                yScale = d3.scale.linear()
+                    .domain(d3.extent(mapY))
+                    .range([focusHeight - padding, padding]);
+               //no distortion means the clipbox is a bit bigger because the axis isn't moved to make room for the slider
+               clipBox
+                    .attr("width", width  - padding - padding)
+                    .attr("x",  padding);
+
+            }
+            
+            function scaleDistortionX() {
+                xScale = d3.fisheye.scale(d3.time.scale.utc)
+                    .domain(d3.extent(mapX))
+                    .range([padding + padding, width - padding]);
+                yScale = d3.scale.linear()
+                    .domain(d3.extent(mapY))
+                    .range([focusHeight - padding - padding, padding]);
+            }
+            
+            function scaleDistortionY() {
+                xScale = d3.time.scale.utc()
+                    .domain(d3.extent(mapX)) 
+                    .range([padding + padding, width - padding]);
+                yScale = d3.fisheye.scale(d3.scale.linear)
+                    .domain(d3.extent(mapY))
+                    .range([focusHeight - padding - padding, padding]);
+            }
+            
+            function scaleDistortionXY() {
+                xScale = d3.fisheye.scale(d3.time.scale.utc)
+                    .domain(d3.extent(mapX))
+                    .range([padding + padding, width - padding]);
+                yScale = d3.fisheye.scale(d3.scale.linear)
+                    .domain(d3.extent(mapY))
+                    .range([focusHeight - padding - padding, padding]);
+            }
+            
+            function updateScaleData() {
+                 xScale.domain(d3.extent(mapX));
+                 yScale.domain(d3.extent(mapY));
+                 xContextScale.domain(d3.extent(mapX));
+                 yContextScale.domain(d3.extent(mapY));
+                 xSliderScale.domain(d3.extent(mapX));
+                 ySliderScale.domain(d3.extent(mapY));
+            }
+            
+            //calculates the scale and the things that are only dependent on the scale (line & brush)
+            function distortionScale() {
+                //move the clipbox because the axes move to make room for the sliders
+                clipBox
+                    .attr("width", width - padding - padding - padding)
+                    .attr("x", padding + padding);
+                //check for x, y distortion and update scale where necessary
+                //distortion = xy
+                if(distortion.indexOf('x') !== -1 && distortion.indexOf('y') !== -1)
+                   scaleDistortionXY();
+                //distortion = x
+                else if(distortion.indexOf('x') !== -1)
+                    scaleDistortionX();
+                //distortion = y
+                else if(distortion.indexOf('y') !== -1) 
+                    scaleDistortionY();
+                //no distortion
+                else
+                    scaleNoDistortion(); 
             };
 
             //defines the axes
@@ -290,6 +326,7 @@ function herschreven() {
             function updateAxis() {
                 var translate = "";
                 //check for distortion, if yes move the x y axis to make room for the sliders
+                //x
                 if(distortion === "") translate = "translate(0, " + (focusHeight - padding) + ")";
                 else translate = "translate(0, " + (focusHeight - padding - padding) + ")";
                 // Update the Axis
@@ -297,7 +334,7 @@ function herschreven() {
                     //.transition().duration(1500)
                     .attr('transform', translate)
                     .call(xAxis);
-            
+                //y
                 if(distortion === "") translate =  "translate(" + padding + ",0)";
                 else translate = translate =  "translate(" + padding * 2 + ",0)";
                 // Update the Axis
@@ -305,7 +342,7 @@ function herschreven() {
                     //.transition().duration(1500)
                     .attr('transform', translate)
                     .call(yAxis);
-            
+                //contextaxis
                 context.append("g")
                     .attr("class", "x axis")
                     .attr("transform", "translate(0, " + (height - padding) + ")")
@@ -367,11 +404,12 @@ function herschreven() {
                     .call(contextBrush);
             }
             
-            //draw the lines (update, enter, exit)
+            //draw the lines (update, enter, exit) 
+            //DO THIS WHEN THE DATA IS CHANGED
             function draw() {
                 //make the container for the lines and bind the data
                 focusContainer = focus.selectAll('g.line')
-                    .data(data);
+                    .data(data, name);
             
                 //update already existing lines
                 focusContainer.selectAll('path')
@@ -395,6 +433,14 @@ function herschreven() {
                 //remove no longer existing lines
                 focusContainer.exit().remove();
             };  
+            
+            //draw the lines again
+            //DO THIS WHEN THE SCALE HAS CHANGED BUT THE DATASET IS THE SAME
+            function redraw() {
+                //redraw the line
+                focusContainer.selectAll('path')
+                    .attr('d', lineFocus);
+            }
             
             //create the context elements and append them to the context
             function drawContext() {
@@ -469,63 +515,73 @@ function herschreven() {
             
             function brushedContext() {
                 if(contextBrush.empty())
-                    xScale.domain(xContextScale.domain())
+                    xScale.domain(xContextScale.domain());
                 else
-                    xScale.domain(contextBrush.extent())
-                var extent = contextBrush.extent();
+                    xScale.domain(contextBrush.extent());
                 updateAxis();
-                focusContainer.selectAll('path')
-                    .attr('d', lineFocus);
+                redraw();
             }
             
             //update the carthesian distortian according to the new x value
             function updateDistortionX() {
                 //create the new scale
-                scale();
+                distortionScale();
                 //create or delete the sliders if necessary
                 if(distortion.indexOf('x') !== -1) {
                     sliderX();
-                    brushedX();
+                    brushedX();                   
                 }
                 else {
                    focus.selectAll("g.x.slider").remove();
                    focus.selectAll("g.x.handle").remove();
                    focus.selectAll("g.x.halo").remove();
                 }
+                if(distortion.indexOf('y') !== -1) {
+                    brushedY();
+                }
+                
                 //update the axis to the new scale & redraw
+                axis();
                 updateAxis();
-                draw();
+                updateBrushContext();
+                brushedContext();
             }
             
             //update the carthesian distortian according to the new y value
             function updateDistortionY() {
                 //create the new scale
-                scale();
+                distortionScale();
                 //create or delete the sliders if necessary
                 if(distortion.indexOf('y') !== -1) {
                     sliderY();
-                    brushedX();
-                    brushedY();
+                    brushedY(); 
                 }
                 else {
                    focus.selectAll("g.y.slider").remove();
                    focus.selectAll("g.y.handle").remove();
                    focus.selectAll("g.y.halo").remove();
                 }
+                if(distortion.indexOf('x') !== -1) {
+                    brushedX();
+                }
+                
                 //update the axis to the new scale & redraw
+                axis();
                 updateAxis();
-                draw();
+                updateBrushContext();
+                brushedContext();
             }
             
             //this function is called whenever the dataset changes
             updateData = function (){
                 calculateMapXY();
-                scale();
+                updateScaleData();
                 axis();
                 updateAxis();
                 draw();
                 drawContext();
                 updateBrushContext();
+                brushedContext();
             };
 
         });
