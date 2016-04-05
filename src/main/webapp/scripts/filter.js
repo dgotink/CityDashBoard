@@ -16,7 +16,6 @@ function filterDataAmount(color, xName, yName, input, amount, object, element, c
         var length = dataArr.length;
         var modulo = Math.floor(length/amount);
         for(var i = 0; i < length; i++){
-            var test = i % modulo;
             if(i % modulo === 0){
                 dataArrAmount.push({ "x": pick(xName, dataArr[i]), "y": pick(yName, dataArr[i]) });
             }          

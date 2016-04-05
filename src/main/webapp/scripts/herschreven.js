@@ -7,21 +7,19 @@ function herschreven() {
         contextHeight = 40,
         margin = 10,
         focusHeight = height - padding - contextHeight - margin;
-        
 
     var data = [];
 
     var distortion = ""; //empty, x, y or xy depending on where the distortion is
     
-    var updateWidth,
-        updateHeight,
-        updateData;
+    var updateData;
 
     function chart(selection){
         selection.each(function() { 
             //the vars needed in the chart function (will be filled in later by subfunctions)
             //the data in X & Y
-            var mapX,
+            var mergedMap,
+                mapX,
                 mapY;
             //the scales needed to scale the axis, datapoints    
             var xScale,
@@ -57,6 +55,10 @@ function herschreven() {
                 contextContainer;
             //the element to which the svg is assigned
             var element = this;
+            //voronoi
+            /*var voronoi = d3.geom.voronoi()
+                .x(function(d) { return xScale(d.x); })
+                .y(function(d) { return yScale(d.y); })*/
             
             //time parser
             var timeFormat = d3.time.format("%Y-%m-%dT%H:%M:%S.%LZ");
@@ -73,9 +75,13 @@ function herschreven() {
                 .attr("width", width)
                 .attr("height", height)
                 .attr("class", "svgbox");
+        
+            /*var voronoiGroup = svg.append("g")
+                .attr("class", "voronoi");*/
 
             var focus = svg.append('g')
                 .attr("class", "focus");
+              
         
             //append a clippath so lines can't exceed the focus box
             var clip = focus.append("defs").append("clipPath")
@@ -83,8 +89,8 @@ function herschreven() {
             var clipBox = clip.append("rect")
                     .attr("width", width - padding - padding)
                     .attr("x", padding)
-                    .attr("height", height - padding - padding)
-                    .attr("y", padding);
+                    .attr("height", height)
+                    .attr("y", 0);
         
             var context = svg.append('g')
                 .attr("class", "context");   
@@ -149,7 +155,7 @@ function herschreven() {
             
             //calculates the mapX and the mapY from the data
             function calculateMapXY() {
-                var mergedMap = d3.merge(data.map(function (d) { return d.data; }));
+                mergedMap = d3.merge(data.map(function (d) { return d.data; }));
                 mapX = mergedMap.map(function(d) { return timeFormat.parse(d.x); });
                 mapY = mergedMap.map(function(d) { return d.y; });
             }
@@ -417,29 +423,53 @@ function herschreven() {
                     //.transition().duration(1500)
                     .attr('d', lineFocus);
             
+                focusContainer.selectAll('circle')
+                    .data(function(d) { return d.data; })
+                    .attr('cx', function (d) { return xScale(timeFormat.parse(d.x)); })
+                    .attr('cy', function (d) { return yScale(d.y); });
+            
                 //create the new lines
                 focusContainer.enter().append('g')
-                    .attr('stroke', function(d) { return d.color; })
+                    .style('stroke', function(d) { return d.color; })
+                    .style('fill', function(d) { return d.color; })
+                    .style('opacity', '0.7')
                     .attr('clip-path', 'url(#clip)')
-                    .attr('class', 'line');
+                    .attr('class', function(d) { return 'line ' + d.name; });
 	
                 focusContainer.selectAll('path')
                     .data(function(d) { return [d.data]; }) // continues the data from the container
                     .enter().append('path')
+                    .style('fill', 'none')
                     .attr('d', translineFocus)
                     //.transition().duration(1500)
                     .attr('d', lineFocus);
             
+                focusContainer.selectAll('circle')
+                    .style('fill', function(d) { return d.color; })
+                    .data(function(d) { return d.data; })
+                    .enter().append('circle')
+                    .attr('r', 4)
+                    .attr('cx', function (d) { return xScale(timeFormat.parse(d.x)); })
+                    .attr('cy', function (d) { return yScale(d.y); })
+                    .style('opacity', '0')
+                    
+                    .on('mouseover', mouseoverDatapoint)
+                    .on('mouseout', mouseoutDatapoint);
+            
                 //remove no longer existing lines
                 focusContainer.exit().remove();
             };  
-            
+                        
             //draw the lines again
             //DO THIS WHEN THE SCALE HAS CHANGED BUT THE DATASET IS THE SAME
             function redraw() {
                 //redraw the line
                 focusContainer.selectAll('path')
                     .attr('d', lineFocus);
+            
+                focusContainer.selectAll('circle')
+                        .attr('cx', function (d) { return xScale(timeFormat.parse(d.x)); })
+                        .attr('cy', function (d) { return yScale(d.y); });
             }
             
             //create the context elements and append them to the context
@@ -467,6 +497,16 @@ function herschreven() {
             
                 //remove no longer existing lines
                 contextContainer.exit().remove();
+            }
+            
+            function mouseoverDatapoint(){
+                d3.select(this)
+                    .style('opacity', '1')
+                    .attr('r', 10);
+            };
+            
+            function mouseoutDatapoint(){
+                d3.select(this).style('opacity', '0');
             }
             
             //redraw the slider, the axes, the line according to the new distortion value
@@ -583,9 +623,7 @@ function herschreven() {
                 updateBrushContext();
                 brushedContext();
             };
-
         });
-        
     }
     
     //because binding the data by index will not work, we bind the data by name. this funcion is called for the keys (names)
