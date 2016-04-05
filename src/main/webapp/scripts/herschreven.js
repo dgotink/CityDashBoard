@@ -4,6 +4,7 @@ function herschreven() {
     var width = 800,
         height = 350,
         padding = 25,
+        datapointInformationWidth = 250,
         contextHeight = 40,
         margin = 10,
         focusHeight = height - padding - contextHeight - margin;
@@ -55,13 +56,10 @@ function herschreven() {
                 contextContainer;
             //the element to which the svg is assigned
             var element = this;
-            //voronoi
-            /*var voronoi = d3.geom.voronoi()
-                .x(function(d) { return xScale(d.x); })
-                .y(function(d) { return yScale(d.y); })*/
             
             //time parser
             var timeFormat = d3.time.format("%Y-%m-%dT%H:%M:%S.%LZ");
+            var timeTextFormat = d3.time.format("%x | %X");
             
             //line methods
             var translineFocus,
@@ -75,14 +73,10 @@ function herschreven() {
                 .attr("width", width)
                 .attr("height", height)
                 .attr("class", "svgbox");
-        
-            /*var voronoiGroup = svg.append("g")
-                .attr("class", "voronoi");*/
 
             var focus = svg.append('g')
                 .attr("class", "focus");
-              
-        
+
             //append a clippath so lines can't exceed the focus box
             var clip = focus.append("defs").append("clipPath")
                 .attr("id", "clip")
@@ -93,7 +87,10 @@ function herschreven() {
                     .attr("y", 0);
         
             var context = svg.append('g')
-                .attr("class", "context");   
+                .attr("class", "context");
+        
+            var datapointInformation = svg.append('g')
+                .attr('class', 'datapointInformation');
 
             calculateMapXY();
             initScale();
@@ -103,6 +100,7 @@ function herschreven() {
             addButtons();
             drawContext();
             appendBrushContext();
+            drawDatapointInformation();
             
             //adds buttons for switching distortion, melding
             function addButtons(){
@@ -165,7 +163,7 @@ function herschreven() {
             
                 xContextScale = d3.time.scale.utc()
                     .domain(d3.extent(mapX))
-                    .range([padding, width - padding]);
+                    .range([padding + datapointInformationWidth + margin, width - padding]);
                 
                 yContextScale = d3.scale.linear()
                     .domain(d3.extent(mapY))
@@ -410,6 +408,50 @@ function herschreven() {
                     .call(contextBrush);
             }
             
+            //appends a text to the focus. this text will be used to show the data of the highlighted circle
+            function drawDatapointInformation() { 
+                //append the rect for the x information
+                datapointInformation.append('rect')
+                    .attr('class', 'datapointinformationrect x')
+                    .attr('width', datapointInformationWidth)
+                    .attr('height', contextHeight/2 )
+                    .attr('x', padding)
+                    .attr('y', padding + focusHeight)
+                    .style('fill', 'none')
+                    .style('stroke', 'black')
+                    .style('shape-rendering', 'crispEdges');
+                //append the rect for the y information
+                datapointInformation.append('rect')
+                    .attr('class', 'datapointinformationrect y')
+                    .attr('width', datapointInformationWidth)
+                    .attr('height', contextHeight/2 )
+                    .attr('x', padding)
+                    .attr('y', padding + focusHeight + contextHeight/2)
+                    .style('fill', 'none')
+                    .style('stroke', 'black')
+                    .style('shape-rendering', 'crispEdges');
+                
+                //append the text for the x information
+                datapointInformation.append('text')
+                    .attr('class', 'datatextbox x')
+                    .style('font-family', 'Helvetica, Arial, sans-serif')
+                    .style('font-size','12px')
+                    .style('fill', 'black')
+                    .attr('x', padding + padding)
+                    .attr('y', padding + focusHeight + contextHeight/2 - 4);
+                    //.attr("text-anchor", "middle");
+            
+                //append the text for the y information
+                datapointInformation.append('text')
+                    .attr('class', 'datatextbox y')
+                    .style('font-family', 'Helvetica, Arial, sans-serif')
+                    .style('font-size','12px')
+                    .style('fill', 'black')
+                    .attr('x', padding + padding)
+                    .attr('y', padding + focusHeight + contextHeight - 4);
+                    //.attr("text-anchor", "middle");
+            }
+            
             //draw the lines (update, enter, exit) 
             //DO THIS WHEN THE DATA IS CHANGED
             function draw() {
@@ -445,14 +487,12 @@ function herschreven() {
                     .attr('d', lineFocus);
             
                 focusContainer.selectAll('circle')
-                    .style('fill', function(d) { return d.color; })
                     .data(function(d) { return d.data; })
                     .enter().append('circle')
                     .attr('r', 4)
                     .attr('cx', function (d) { return xScale(timeFormat.parse(d.x)); })
                     .attr('cy', function (d) { return yScale(d.y); })
                     .style('opacity', '0')
-                    
                     .on('mouseover', mouseoverDatapoint)
                     .on('mouseout', mouseoutDatapoint);
             
@@ -500,13 +540,25 @@ function herschreven() {
             }
             
             function mouseoverDatapoint(){
-                d3.select(this)
+                var circle = d3.select(this)
                     .style('opacity', '1')
-                    .attr('r', 10);
+                    .attr('r', 6);
+            
+                var circleX = circle.attr('cx');
+                var dataX = xScale.invert(circleX);
+                var circleY = circle.attr('cy');
+                var dataY = yScale.invert(circleY);
+
+                datapointInformation.select('.datatextbox.x')
+                        .text(timeTextFormat(dataX));
+                datapointInformation.select('.datatextbox.y')
+                        .text(dataY);
             };
             
             function mouseoutDatapoint(){
-                d3.select(this).style('opacity', '0');
+                d3.select(this)
+                        .style('opacity', '0')
+                        .attr('r', 4)
             }
             
             //redraw the slider, the axes, the line according to the new distortion value
