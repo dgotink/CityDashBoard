@@ -470,7 +470,7 @@ function herschreven() {
                     .attr('cx', function (d) { return xScale(timeFormat.parse(d.x)); })
                     .attr('cy', function (d) { return yScale(d.y); });
             
-                //create the new lines
+                //create the new lines & circles
                 focusContainer.enter().append('g')
                     .style('stroke', function(d) { return d.color; })
                     .style('fill', function(d) { return d.color; })
@@ -548,17 +548,28 @@ function herschreven() {
                 var dataX = xScale.invert(circleX);
                 var circleY = circle.attr('cy');
                 var dataY = yScale.invert(circleY);
+                
+                var parent = d3.select(this.parentNode);
+                var color = parent.style('fill');
 
                 datapointInformation.select('.datatextbox.x')
-                        .text(timeTextFormat(dataX));
+                        .text(timeTextFormat(dataX))
+                        .style('fill', color);
                 datapointInformation.select('.datatextbox.y')
-                        .text(dataY);
+                        .text(dataY)
+                        .style('fill', color);
             };
             
             function mouseoutDatapoint(){
                 d3.select(this)
                         .style('opacity', '0')
                         .attr('r', 4)
+                
+                datapointInformation.select('.datatextbox.x')
+                        .text('');
+                
+                datapointInformation.select('.datatextbox.y')
+                        .text('');
             }
             
             //redraw the slider, the axes, the line according to the new distortion value
