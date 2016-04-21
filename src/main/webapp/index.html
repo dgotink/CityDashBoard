@@ -3,11 +3,14 @@
 	<head>
 		<meta charset="utf-8">
 		<script src="http://d3js.org/d3.v3.min.js"></script>
-                <script src="scripts/linechart.js"></script>
                 <script src="scripts/data.js"></script>
+                <script src="scripts/herschreven.js"></script>
                 <script src="scripts/filter.js"></script>
                 <script src="scripts/fisheye.js"></script>
-               <script src="scripts/herschreven.js"></script>
+                <script src="scripts/read.js"></script>
+                <script src="scripts/groupby.js"></script>
+                <script src="scripts/primitiveLineGraph.js"></script>
+                <script src="scripts/complexLineGraph.js"></script>
 		<style type="text/css">
 		
 		.line {
@@ -27,7 +30,6 @@
 		}
 		
 		.svgbox { 
-                    margin: 20px;
                     border-style: outset;
 		}
                 
@@ -59,6 +61,14 @@
                     fill-opacity: .125;
                     shape-rendering: crispEdges;
                 }
+                
+                #PrimitiveLineGraphBox {
+                    line-height: 0px;
+                }
+                
+                .PrimitiveLineGraph {
+                    vertical-align: top;
+                }
 
 		
 		</style>
@@ -69,29 +79,39 @@
             <div id="CollectedLineGraphBox">
             </div>
 		<script type="text/javascript">
-                var leuvenGraph;
-                var antwerpenGraph;
-                var ghentGraph;
-                var collectedGraph;
+                var bikesGraph;
+                var weatherGraph;
+                var complexGraph;
                 
-                //filterData('black', 'loc', 'text', './data/twitter_isGeo.json', leuvenGraph, '#PrimitiveLineGraphBox', toLineChart);
-                
-                filterDataAmount('red', 'created_at.$date', 'temperature', './data/weather_leuven.json', 100, leuvenGraph, '#PrimitiveLineGraphBox', toLineChart );
-                filterDataAmount('green', 'created_at.$date', 'temperature', './data/weather_antwerp.json', 100, antwerpenGraph, '#PrimitiveLineGraphBox', toLineChart );
-                filterDataAmount('purple', 'created_at.$date', 'temperature', './data/weather_ghent.json', 100, ghentGraph, '#PrimitiveLineGraphBox', toLineChart );
-             
-                collectedGraph = herschreven();
+               toPrimitiveLineChart('red', 'created_at.$date', 'freespots', 'bikes_Antwerpen.json', bikesGraph, groupByX);
+               toPrimitiveLineChart('green', 'created_at.$date', 'temperature', 'weather_Antwerpen.json', weatherGraph, filterData);
+
+                complexGraph = complexLineGraph();
                                  d3.select('#CollectedLineGraphBox')
-                                    .call(collectedGraph);
+                                    .call(complexGraph);
 
                 function toLineChart(object, element, data){
-                    object = herschreven().data([data]);
+                    object = complexLineGraph().data([data]);
                     d3.select(element)
                             .call(object);
                 }
+                
+                function toPrimitiveLineChart(color, xName, yName, file, object, callback){
+                    var method = function(data) {
+                        object = primitiveLineGraph().data(data);
+                        d3.select(element)
+                            .call(object);
+                    };
+                    
+                    var parent = document.getElementById("PrimitiveLineGraphBox");
+                    var element = document.createElement("div");
+                    element.setAttribute("class", "PrimitiveLineGraph");
+                    parent.appendChild(element);
+                    callback(color, xName, yName, file, method);
+                }
             
                 function CreateCollectedGraphBox(data){
-                    collectedGraph.data(data);
+                    complexGraph.data(data);
                 }
                 
                 

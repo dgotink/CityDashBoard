@@ -79,7 +79,8 @@ function herschreven() {
 
             //append a clippath so lines can't exceed the focus box
             var clip = focus.append("defs").append("clipPath")
-                .attr("id", "clip")
+                .attr("id", "clip");
+        
             var clipBox = clip.append("rect")
                     .attr("width", width - padding - padding)
                     .attr("x", padding)
@@ -181,19 +182,19 @@ function herschreven() {
                     .clamp(true);
             
                 //line methods
-                translineFocus = d3.svg.line().interpolate("basis")
+                translineFocus = d3.svg.line().interpolate("cardinal")
                     .x(function(d){ return xScale(timeFormat.parse(d.x)); })
                     .y(function(){ return focusHeight - padding; });
             
-                lineFocus = d3.svg.line().interpolate("basis")
+                lineFocus = d3.svg.line().interpolate("cardinal")
                     .x(function(d){ return xScale(timeFormat.parse(d.x)); })
                     .y(function(d){ return yScale(d.y); });
             
-                translineContext = d3.svg.line().interpolate("basis")
+                translineContext = d3.svg.line().interpolate("cardinal")
                     .x(function(d){ return xContextScale(timeFormat.parse(d.x)); })
                     .y(function(){ return height - padding; });
             
-                lineContext = d3.svg.line().interpolate("basis")
+                lineContext = d3.svg.line().interpolate("cardinal")
                     .x(function(d){ return xContextScale(timeFormat.parse(d.x)); })
                     .y(function(d){ return yContextScale(d.y); });
             
@@ -600,7 +601,7 @@ function herschreven() {
                 //set the vars for the mouse position and draw the new line without animation
                 if (d3.event.sourceEvent) { 
                     lastY = d3.mouse(this)[1];
-                    yScale.distortion(3).focus(lastY);
+                    yScale.distortion(20).focus(lastY);
                     focusContainer.selectAll('path')
                         .attr('d', lineFocus);
                  } else {

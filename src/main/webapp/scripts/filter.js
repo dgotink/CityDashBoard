@@ -1,13 +1,14 @@
-function filterData(color, xName, yName, input, object, element, callback){
-    d3.json(input, function(data){
-	var dataArr = data.data;
+var filterData = function(color, xName, yName, input, callback){
+    var method = function(data){
+        var dataArr = data.data;
         dataArr = dataArr.map(function (i) {
             return { "x": pick(xName, i), "y": pick(yName, i) };
         });
         var out = { "name": data.name, "color": color, "data": dataArr };
-        callback(object, element, out);
-    });
-}
+        callback(out);
+    };
+    read(input, method);
+};
 
 function filterDataAmount(color, xName, yName, input, amount, object, element, callback){
     d3.json(input, function(data){
