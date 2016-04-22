@@ -2,7 +2,7 @@ function primitiveLineGraph(){
     //variables
     var width = 800;
     var height = 100;
-    var margin = 10;
+    var margin = {'border': 10};
     var padding = {'top': 10, 'right': 100, 'bottom': 10, 'left': 40};
     var data = {};
     var updateData;
@@ -34,8 +34,8 @@ function primitiveLineGraph(){
                 //make the svg
                 svg = d3.select(element)
                     .append("svg")
-                    .attr("width", width + padding.left + padding.right)
-                    .attr("height", height + padding.top + padding.bottom)
+                    .attr("width", width + padding.left + padding.right + margin.border + margin.border)
+                    .attr("height", height + padding.top + padding.bottom + margin.border + margin.border)
                     .attr("class", "svgbox");
             
                 //the eye pattern (image) for the rect button
@@ -54,8 +54,8 @@ function primitiveLineGraph(){
                     .data([data])
                     .attr("width", edge)
                     .attr("height", edge)
-                    .attr("x", width + padding.left + padding.right- margin - edge)
-                    .attr("y", padding.top + margin)
+                    .attr("x", width + padding.left + padding.right + margin.border - edge)
+                    .attr("y", margin.border)
                     .style("fill", "url(#eye)")
                     .style('stroke', 'black')
                     .style('stroke-width', '1px')
@@ -69,7 +69,7 @@ function primitiveLineGraph(){
             
             function text(){
                 text = svg.append('text')
-                        .attr('x', margin)
+                        .attr('x', margin.border)
                         .attr('y', 20)
                         .text( function () { return data.name ; })
                         .style("font-family", "sans-serif")
@@ -81,8 +81,8 @@ function primitiveLineGraph(){
                 background = svg.append('rect')
                         .attr('x', 0)
                         .attr('y', 0)
-                        .attr('width', bbox.width + margin)
-                        .attr('height', bbox.height + margin/2)
+                        .attr('width', bbox.width + margin.border)
+                        .attr('height', bbox.height + margin.border/2)
                         .style("fill", "white")
                         .style('opacity', '0.5');
             }
@@ -90,11 +90,11 @@ function primitiveLineGraph(){
             function scales(){
                 xScale = d3.time.scale()
                     .domain(d3.extent(mapX))
-                    .range([margin + padding.left , margin + padding.left + width]);
+                    .range([margin.border + padding.left , margin.border + padding.left + width]);
             
                 yScale = d3.scale.linear()
                     .domain(d3.extent(mapY))
-                    .range([height - margin, margin]);
+                    .range([padding.top + margin.border + height, padding.top + margin.border]);
             
                 line = d3.svg.line().interpolate("cardinal")
                     .x(function(d){ return xScale(timeFormat.parse(d.x)); })
