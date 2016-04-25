@@ -5,10 +5,18 @@ var groupByX = function (color, xName, yName, input, callback){
         dataArr.forEach(function (i) {
             var x = pick(xName, i);
             var y = pick(yName, i);
-            if(x in dic)
-                dic[x] += y;
-            else 
-                dic[x] = y;        
+            if(x in dic){
+                if(typeof y === 'string')
+                    dic[x] += parseInt(y);
+                else
+                    dic[x] += y;
+            } 
+            else {
+                if(typeof y === 'string')
+                    dic[x] = parseInt(y);      
+                else
+                    dic[x] = y;
+            }     
         });
         var out = { "name": data.name, "color": color, "data": getArrFromDic(dic) };
         callback(out);

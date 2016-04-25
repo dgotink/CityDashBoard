@@ -37,6 +37,8 @@ function complexLineGraph(){
             var brushContext;
             //rect var to draw a rect (looks like a line) where the mousepointer is
             var rectMousePointer;
+            //labels
+            var label = {};
             //timeformat var
             var timeFormat = d3.time.format.utc('%Y-%m-%dT%H:%M:%S.%LZ');
             //bisectdate var to determine closest datapoint to the mousepointer
@@ -54,6 +56,7 @@ function complexLineGraph(){
                 focus = svg.append('g')
                     .attr('class', 'focus');
             
+                //append a clippath to the focus. Lines drawn in the focus can't exceed this clippath.
                 focusClipBox = focus.append('defs').append('clipPath')
                         .attr('id', 'clip')
                         .append('rect')
@@ -90,90 +93,106 @@ function complexLineGraph(){
                 mapData();
                 scalesFocus();
                 scalesContext();
-                initAxes();
-                
+                initAxes();                
             }
             
-            function mouseEnterFocus(){
-                rectMousePointer   
-                        .style('visibility', 'visible');
-            }
-            
-            function mouseLeaveFocus(){
-                focus.selectAll('.dataText').remove();
-                focus.selectAll('.dataRect').remove();
-                focus.selectAll('.dataCircle').remove();
-                rectMousePointer   
-                        .style('visibility', 'hidden');
-            }
-            
-            function mouseOverFocus(){
-                //remove previous texts
-                focus.selectAll('.dataText').remove();
-                focus.selectAll('.dataRect').remove();
-                focus.selectAll('.dataCircle').remove();
-                //get the x coordinate of the mouse
-                var mouseX =  d3.mouse(this)[0]; 
-                //move the rect to the new mouse position
-                rectMousePointer
-                        .attr('x', mouseX);
-                //determine the date from the mouse position
-                var dateX = xScaleFocus.invert(mouseX);
-                //for each dataset in data, find the closest point to dateX and print the Y value on the screen
-                //count the amount of dataset texts written to set the Y values under each other
+            function labels(){
+                //svg.selectAll('.labelRect').remove();
                 var count = 0;
-                var fontsize = 12;
-                var textmargin = 5;
-                data.forEach(function(dataset){
-                    var i = bisectDate(dataset.data, dateX);
-                    var datum = closestDataPointToValueX(dataset.data[i-1], dataset.data[i], dateX);
+                var edge = 20;
+                var rectmargin = 5;
+                var new_label = {};
+                data.forEach(function(datum){
+                    var group = label[datum.name];
+                    if(group == null){
+                        group = svg.append('g')
+                            .attr('class', 'label')
+                            .attr('clicked', false)
+                            .attr('label', datum.name)
+                            .on('mouseenter', labelEnter)
+                            .on('mouseleave', labelLeave)
+                            .on('click', labelClick);
+                
+                        group.append('rect')
+                            .attr('class', 'labelRect')                          
+                            .attr('x', margin.border)
+                            .attr('width', edge)
+                            .attr('height', edge)
+                            .attr('color', datum.color)
+                            .attr('label', datum.name)
+                            .style('fill', datum.color);
+                    }
                     
-                    var text = focus.append('text')
-                        .attr('class', 'dataText')
-                        .attr('x', mouseX + margin.border)
-                        .attr('y', padding.top + heightFocus - (count * (textmargin + fontsize)))
-                        .text( function () { return datum.y ; })
+                    group.select('.labelRect')
+                            .attr('y', margin.border + (count * (edge + rectmargin)));
+                    
+                    if(group.attr('clicked') === 'true'){
+                        group.attr('clicked', false)
+                        labelClick(group);
+                    }
+                    
+                    new_label[datum.name] = group;       
+                    count++;
+                });
+                label = new_label;
+                svg.selectAll('g.label').each(function(){
+                    var entry = d3.select(this);
+                    if(label[entry.attr('label')] == null)
+                        entry.remove();
+                });
+            }
+
+            function labelEnter(group){   
+                if(group == null)
+                    group = d3.select(this);
+                var rect = group.select('.labelRect');
+                if(group.attr('clicked') === 'false'){
+                   var fontsize = 12;
+                   var textmargin = (parseInt(rect.attr('height') - fontsize))/2;
+                   rect.style('opacity', '0.4');
+                
+                    var text = group.append('text')
+                        .attr('class', 'labelText')
+                        .attr('x', parseInt(rect.attr('x')) + 5)
+                        .attr('y', parseInt(rect.attr('y')) + parseInt(rect.attr('height')) - textmargin)
+                        .text(rect.attr('label'))
                         .style('font-family', 'sans-serif')
                         .style('font-size', fontsize)
-                        .style('fill', dataset.color);
+                        .style('fill', 'white')
+                        .style('pointer-events', 'none');
                 
                     var bbox = text.node().getBBox();
                 
-                    focus.append('rect')
-                        .attr('class', 'dataRect')
-                        .attr('x', bbox.x - margin.border/2)
-                        .attr('y', bbox.y)
-                        .attr('width', bbox.width + margin.border)
-                        .attr('height', bbox.height)
-                        .style("fill", "lightgray")
-                        .style('opacity', '0.9');
-                
-                    focus.append('text')
-                        .attr('class', 'dataText')
-                        .attr('x', mouseX + margin.border)
-                        .attr('y', padding.top + heightFocus - (count * (textmargin + fontsize)))
-                        .text( function () { return datum.y ; })
-                        .style('font-family', 'sans-serif')
-                        .style('font-size', fontsize)
-                        .style('fill', dataset.color);
-                
-                    focus.append('circle')
-                        .attr('class', 'dataCircle')
-                        .attr('cx', xScaleFocus(timeFormat.parse(datum.x)))
-                        .attr('cy', yScaleFocus[dataset.name](datum.y))
-                        .attr('r', 3)
-                        .style('fill', dataset.color);
-                
-                    count++;
-                });
+                    rect
+                        .attr('width', bbox.width + 5 + 5); 
+                    }
             }
             
-            function closestDataPointToValueX(object1, object2, value){
-                var xObject1 = timeFormat.parse(object1.x);
-                var xObject2 = timeFormat.parse(object2.x);
-                var inBetweenObjects = (xObject2 - xObject1)/2;
-                if(value < new Date(xObject1.getTime() + inBetweenObjects)) return object1;
-                else return object2;
+            function labelLeave(group){
+                if(group == null)
+                    group = d3.select(this);
+                var rect = group.select('.labelRect');
+                if(group.attr('clicked') === 'false'){
+                    rect
+                        .style('opacity', '1')
+                        .attr('width', rect.attr('height'));
+                    group.selectAll('.labelText').remove();
+                }
+                
+            }
+            
+            function labelClick(group){
+                if(group == null)
+                    group = d3.select(this);
+                var rect = group.select('.labelRect');
+                if(group.attr('clicked') === 'true'){
+                    group.attr('clicked', false);
+                    labelLeave(group);
+                }     
+                else {
+                    labelEnter(group);
+                    group.attr('clicked', true);
+                }                 
             }
             
             function mapData(){
@@ -194,7 +213,7 @@ function complexLineGraph(){
                 data.forEach(function(datum){
                     var scale = d3.scale.linear()
                         .domain(d3.extent(mapY[datum.name]))
-                        .range([padding.top + margin.border + heightFocus, padding.top + margin.border]);
+                        .range([padding.top + margin.border + heightFocus - margin.between, padding.top + margin.border]);
                     yScaleFocus[datum.name] = scale;
                 });
                 
@@ -337,7 +356,100 @@ function complexLineGraph(){
                 brushedContext();
                 updateAxesContext();
                 drawContext();
+                labels();
             };
+            
+            //when the mouse enters the focus make the rect mousepointer visible
+            function mouseEnterFocus(){
+                rectMousePointer   
+                        .style('visibility', 'visible');
+            }
+            //when the mouse leaves the focus make the rect mousepointer invisibe en remove the drawn text en circle elements
+            function mouseLeaveFocus(){
+                focus.selectAll('.dataText').remove();
+                focus.selectAll('.dataRect').remove();
+                focus.selectAll('.dataCircle').remove();
+                context.selectAll('.dataCircle').remove();
+                rectMousePointer   
+                        .style('visibility', 'hidden');
+            }
+            //when the mouse moves over the focus
+            function mouseOverFocus(){
+                //remove previous texts & circles
+                focus.selectAll('.dataText').remove();
+                focus.selectAll('.dataRect').remove();
+                focus.selectAll('.dataCircle').remove();
+                context.selectAll('.dataCircle').remove();
+                //get the x coordinate of the mouse
+                var mouseX =  d3.mouse(this)[0]; 
+                //move the rect to the new mouse position
+                rectMousePointer
+                        .attr('x', mouseX);
+                //determine the date from the mouse position
+                var dateX = xScaleFocus.invert(mouseX);
+                //for each dataset in data, find the closest point to dateX and print the Y value on the screen
+                //count the amount of dataset texts written to set the Y values under each other
+                var count = 0;
+                var fontsize = 12;
+                var textmargin = 5;
+                data.forEach(function(dataset){
+                    var i = bisectDate(dataset.data, dateX);
+                    var datum = closestDataPointToValueX(dataset.data[i-1], dataset.data[i], dateX);
+                    //add a circle to the line at the closest datapoint on the focus
+                    focus.append('circle')
+                        .attr('class', 'dataCircle')
+                        .attr('cx', xScaleFocus(timeFormat.parse(datum.x)))
+                        .attr('cy', yScaleFocus[dataset.name](datum.y))
+                        .attr('r', 3)
+                        .style('fill', dataset.color);
+                    //also add a circle to the context
+                    context.append('circle')
+                        .attr('class', 'dataCircle')
+                        .attr('cx', xScaleContext(timeFormat.parse(datum.x)))
+                        .attr('cy', yScaleContext[dataset.name](datum.y))
+                        .attr('r', 3)
+                        .style('fill', dataset.color);
+                    //add a text element to display the Y value
+                    var text = focus.append('text')
+                        .attr('class', 'dataText')
+                        .attr('x', mouseX + margin.border)
+                        .attr('y', padding.top + heightFocus - (count * (textmargin + fontsize)))
+                        .text( function () { return datum.y ; })
+                        .style('font-family', 'sans-serif')
+                        .style('font-size', fontsize)
+                        .style('fill', dataset.color);
+                    //get the bounding box from the text element
+                    var bbox = text.node().getBBox();
+                    //with this bounding box, draw a rect to use as background for the text
+                    focus.append('rect')
+                        .attr('class', 'dataRect')
+                        .attr('x', bbox.x - margin.border/2)
+                        .attr('y', bbox.y)
+                        .attr('width', bbox.width + margin.border)
+                        .attr('height', bbox.height)
+                        .style("fill", "lightgray")
+                        .style('opacity', '0.9');
+                    //redraw the text so it will appear in the foreground
+                    focus.append('text')
+                        .attr('class', 'dataText')
+                        .attr('x', mouseX + margin.border)
+                        .attr('y', padding.top + heightFocus - (count * (textmargin + fontsize)))
+                        .text( function () { return datum.y ; })
+                        .style('font-family', 'sans-serif')
+                        .style('font-size', fontsize)
+                        .style('fill', dataset.color);
+
+                    count++;
+                });
+            }
+            //returns the closest object to the value
+            function closestDataPointToValueX(object1, object2, value){
+                var xObject1 = timeFormat.parse(object1.x);
+                var xObject2 = timeFormat.parse(object2.x);
+                var inBetweenObjects = (xObject2 - xObject1)/2;
+                if(value < new Date(xObject1.getTime() + inBetweenObjects)) return object1;
+                else return object2;
+            }
             
             initialize();
             

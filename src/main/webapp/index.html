@@ -4,9 +4,7 @@
 		<meta charset="utf-8">
 		<script src="http://d3js.org/d3.v3.min.js"></script>
                 <script src="scripts/data.js"></script>
-                <script src="scripts/herschreven.js"></script>
                 <script src="scripts/filter.js"></script>
-                <script src="scripts/fisheye.js"></script>
                 <script src="scripts/read.js"></script>
                 <script src="scripts/groupby.js"></script>
                 <script src="scripts/primitiveLineGraph.js"></script>
@@ -22,6 +20,7 @@
 		.axis line{
 		    fill: none;
 		    stroke: black;
+                    stroke-width: 1px;
 		    shape-rendering: crispEdges;
 		}
 		.axis text{
@@ -32,30 +31,7 @@
 		.svgbox { 
                     border-style: outset;
 		}
-                
-                .slider .domain {
-                    fill: none;
-                    stroke: #000;
-                    stroke-opacity: .3;
-                    stroke-width: 6px;
-                    stroke-linecap: round;
-                }
 
-                .slider .halo {
-                    fill: none;
-                    stroke: #ddd;
-                    stroke-width: 4px;
-                    stroke-linecap: round;
-                }
-
-                .slider .handle {
-                    fill: #fff;
-                    stroke: #000;
-                    stroke-opacity: .5;
-                    stroke-width: 1.25px;
-                    cursor: crosshair;
-                }
-                
                 .brush .extent {
                     stroke: black;
                     fill-opacity: .125;
@@ -81,10 +57,12 @@
 		<script type="text/javascript">
                 var bikesGraph;
                 var weatherGraph;
+                var parkingsGraph;
                 var complexGraph;
                 
-               toPrimitiveLineChart('red', 'created_at.$date', 'freespots', 'bikes_Antwerpen.json', bikesGraph, groupByX);
-               toPrimitiveLineChart('green', 'created_at.$date', 'temperature', 'weather_Antwerpen.json', weatherGraph, filterData);
+               toPrimitiveLineChart('red', 'created_at.$date', 'freespots', 'bikes_Brussel.json', bikesGraph, groupByX);
+               toPrimitiveLineChart('green', 'created_at.$date', 'temperature', 'weather_Brussel.json', weatherGraph, filterData);
+               toPrimitiveLineChart('purple', 'created_at.$date', 'free_places', 'parkings_brussels.json', parkingsGraph, groupByX);
 
                 complexGraph = complexLineGraph();
                                  d3.select('#CollectedLineGraphBox')
