@@ -444,6 +444,11 @@ function complexLineGraph(){
             }
             //returns the closest object to the value
             function closestDataPointToValueX(object1, object2, value){
+                if(object1 == null){
+                    if(object2 != null)
+                        return object2
+                } else if(object2 == null)
+                    return object1;
                 var xObject1 = timeFormat.parse(object1.x);
                 var xObject2 = timeFormat.parse(object2.x);
                 var inBetweenObjects = (xObject2 - xObject1)/2;
