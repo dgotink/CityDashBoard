@@ -97,7 +97,6 @@ function complexLineGraph(){
             }
             
             function labels(){
-                //svg.selectAll('.labelRect').remove();
                 var count = 0;
                 var edge = 20;
                 var rectmargin = 5;
@@ -126,9 +125,12 @@ function complexLineGraph(){
                     group.select('.labelRect')
                             .attr('y', margin.border + (count * (edge + rectmargin)));
                     
+                    group.select('.labelText').remove();
+                    
                     if(group.attr('clicked') === 'true'){
-                        group.attr('clicked', false)
-                        labelClick(group);
+                        group.attr('clicked', false);
+                        labelEnter(group);
+                        group.attr('clicked', true);
                     }
                     
                     new_label[datum.name] = group;       
@@ -181,17 +183,15 @@ function complexLineGraph(){
                 
             }
             
-            function labelClick(group){
-                if(group == null)
-                    group = d3.select(this);
-                var rect = group.select('.labelRect');
+            function labelClick(){
+                var group = d3.select(this);
                 if(group.attr('clicked') === 'true'){
                     group.attr('clicked', false);
                     labelLeave(group);
                 }     
                 else {
-                    labelEnter(group);
                     group.attr('clicked', true);
+                    labelEnter(group);                   
                 }                 
             }
             
