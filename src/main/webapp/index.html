@@ -3,12 +3,14 @@
 	<head>
 		<meta charset="utf-8">
 		<script src="http://d3js.org/d3.v3.min.js"></script>
+                <script src="https://npmcdn.com/packery@2.0.0/dist/packery.pkgd.min.js"></script> 
+                <script src="http://draggabilly.desandro.com/draggabilly.pkgd.min.js"></script>               
                 <script src="scripts/data.js"></script>
                 <script src="scripts/filter.js"></script>
                 <script src="scripts/read.js"></script>
                 <script src="scripts/groupby.js"></script>
-                <script src="scripts/primitiveLineGraph.js"></script>
-                <script src="scripts/complexLineGraph.js"></script>
+                <script src="scripts/lines.js"></script>
+                <script src="scripts/linegraph.js"></script>
 		<style type="text/css">
 		
 		.line {
@@ -38,60 +40,47 @@
                     shape-rendering: crispEdges;
                 }
                 
-                #PrimitiveLineGraphBox {
+                body { 
+                    margin: 0px
+                }
+
+                .lines {
+                    width: 800px
                     line-height: 0px;
                 }
                 
-                .PrimitiveLineGraph {
+                .lines {
                     vertical-align: top;
+                }
+                
+                .linegraph{
+                    //overflow:auto;
+                    //margin: 10px;
                 }
 
 		
 		</style>
 	</head>
 	<body>
-            <div id="PrimitiveLineGraphBox">
-            </div>
-            <div id="CollectedLineGraphBox">
-            </div>
 		<script type="text/javascript">
-                var bikesGraph;
-                var weatherGraph;
-                var parkingsGraph;
-                var complexGraph;
+                var count = 0;
+                var number_of_graphs = 7;
+                var data = [];
                 
-               toPrimitiveLineChart('red', 'created_at.$date', 'freespots', 'bikes_Brussel.json', bikesGraph, groupByX);
-               toPrimitiveLineChart('green', 'created_at.$date', 'temperature', 'weather_Brussel.json', weatherGraph, filterData);
-               toPrimitiveLineChart('purple', 'created_at.$date', 'free_places', 'parkings_brussels.json', parkingsGraph, groupByX);
+               groupByX('red', 'created_at.$date', 'freespots', 'bikes_Brussel.json', 'free_bike_parking', loaded);
+               filterData('green', 'created_at.$date', 'temperature', 'weather_Brussel.json', 'temperature', loaded);
+               filterData('orange', 'created_at.$date', 'humidity', 'weather_Brussel.json', 'humidity', loaded);
+               filterData('darkblue', 'created_at.$date', 'cloudpercentage', 'weather_Brussel.json', 'cloudpercentage', loaded);
+               filterData('pink', 'created_at.$date', 'windspeed', 'weather_Brussel.json', 'windspeed', loaded);
+               filterData('lightblue', 'created_at.$date', 'pressure', 'weather_Brussel.json', 'airpressure', loaded);
+               groupByX('purple', 'created_at.$date', 'free_places', 'parkings_brussels.json', 'free_car_parking', loaded);
 
-                complexGraph = complexLineGraph();
-                                 d3.select('#CollectedLineGraphBox')
-                                    .call(complexGraph);
-
-                function toLineChart(object, element, data){
-                    object = complexLineGraph().data([data]);
-                    d3.select(element)
-                            .call(object);
-                }
-                
-                function toPrimitiveLineChart(color, xName, yName, file, object, callback){
-                    var method = function(data) {
-                        object = primitiveLineGraph().data(data);
-                        d3.select(element)
-                            .call(object);
-                    };
-                    
-                    var parent = document.getElementById("PrimitiveLineGraphBox");
-                    var element = document.createElement("div");
-                    element.setAttribute("class", "PrimitiveLineGraph");
-                    parent.appendChild(element);
-                    callback(color, xName, yName, file, method);
-                }
-            
-                function CreateCollectedGraphBox(data){
-                    complexGraph.data(data);
-                }
-                
+                function loaded(datum){
+                    data.push(datum);
+                    count++;
+                    if(count === number_of_graphs)
+                        lines(data);
+                }                
                 
 		</script>
 	</body>

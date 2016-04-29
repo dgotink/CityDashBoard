@@ -1,9 +1,9 @@
 function primitiveLineGraph(){
     //variables
     var width = 800;
-    var height = 100;
-    var margin = {'border': 10};
-    var padding = {'top': 10, 'right': 100, 'bottom': 10, 'left': 40};
+    var height = 50;
+    var margin = {'border': 5};
+    var padding = {'top': 0, 'right': 100, 'bottom': 0, 'left': 40};
     var data = {};
     var updateData;
     

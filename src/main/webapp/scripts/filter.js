@@ -1,10 +1,10 @@
-var filterData = function(color, xName, yName, input, callback){
+var filterData = function(color, xName, yName, input, name, callback){
     var method = function(data){
         var dataArr = data.data;
         dataArr = dataArr.map(function (i) {
             return { "x": pick(xName, i), "y": pick(yName, i) };
         });
-        var out = { "name": data.name, "color": color, "data": dataArr };
+        var out = { "name": name, "color": color, "data": dataArr };
         callback(out);
     };
     read(input, method);

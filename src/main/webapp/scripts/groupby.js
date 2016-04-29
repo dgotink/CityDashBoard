@@ -1,4 +1,4 @@
-var groupByX = function (color, xName, yName, input, callback){
+var groupByX = function (color, xName, yName, input, name, callback){
     var method = function(data){
         var dic = {};
         var dataArr = data.data;
@@ -18,7 +18,7 @@ var groupByX = function (color, xName, yName, input, callback){
                     dic[x] = y;
             }     
         });
-        var out = { "name": data.name, "color": color, "data": getArrFromDic(dic) };
+        var out = { "name": name, "color": color, "data": getArrFromDic(dic) };
         callback(out);
     };   
     read(input, method);
