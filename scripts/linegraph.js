@@ -6,6 +6,7 @@ function linegraph(){
     var data = {};
     
     var onChildClick;
+    var onSizeChangedCallback;
     
     var updateData;
     var updateWidth;
@@ -112,6 +113,7 @@ function linegraph(){
             
             updateHeight = function() {
                 updateSvg();
+                onSizeChangedCallback();
                 mapData();
                 scales();
                 redraw(); 
@@ -148,6 +150,11 @@ function linegraph(){
     
     chart.onChildClick = function(value) {
         onChildClick = value;
+        return chart;
+    };
+    
+    chart.onSizeChangedCallback = function(value) {
+        onSizeChangedCallback = value;
         return chart;
     };
     

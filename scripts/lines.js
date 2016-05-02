@@ -1,13 +1,21 @@
 function lines(data) {
-    var amount = data.length;
+    var length = data.length;
     var graphs = {};
     var clicked = {};
     var width = 800;
     var height = calculateHeight();
     var packery;
     
+    var onSizeChangedCallback;
+    var internal_counter;
+    
     function calculateHeight() {
         return window.innerHeight;
+    }
+    
+   onSizeChangedCallback = function(){
+        if(internal_counter === length)
+            packery.layout();             
     }
     
     var onChildClick = function (name) {
@@ -28,18 +36,19 @@ function lines(data) {
     }
     
     function updateHeight() {
+        internal_counter = 0;
         var amount_clicked = getAmountClicked();
         for (var name in graphs) {
             var tmp_height;
-            if(amount === amount_clicked || amount_clicked === 0){
-                tmp_height = height/amount;
+            if(length === amount_clicked || amount_clicked === 0){
+                tmp_height = height/length;
             }
             else if(clicked[name]){
                 tmp_height = ((height * 2)/3)/amount_clicked;
             }
                 
             else {
-                tmp_height = ((height)/3)/(amount - amount_clicked);
+                tmp_height = ((height)/3)/(length - amount_clicked);
             }
                 
             graphs[name].height(tmp_height);
@@ -69,8 +78,9 @@ function lines(data) {
                 
                 graphs[datum.name] = linegraph().data(datum)
                         .width(width)
-                        .height(height/amount)
-                        .onChildClick(onChildClick);
+                        .height(height/length)
+                        .onChildClick(onChildClick)
+                        .onSizeChangedCallback(onSizeChangedCallback);
                 
                 d3.select(element)
                     .call(graphs[datum.name]);
