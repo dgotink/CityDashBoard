@@ -1,4 +1,4 @@
-var baseURL = 'file:///D:/Workspaces/Netbeans Workspace/CityDashBoard/src/data/';
+var baseURL = 'data/';
 
 function read(file, callback){
     url = baseURL + file;
