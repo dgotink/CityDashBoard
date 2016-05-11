@@ -7,6 +7,10 @@ function lines(data) {
     var width = window.innerWidth;
     var contextHeight = 50;
     var height = calculateHeight();
+    //this array contains the values to which you multiply the height to get the total height for all the selected linegraphs
+    //this array has a size the same as the amount of graphs drawn
+    //the index is the amount of selected graphs
+    var selected_heights = [0, 0.4, 0.55, 0.67, 0.76, 0.76, 0.76, 0.76];
     
     var packery_main;
     var packery_linegraphs;    
@@ -70,14 +74,14 @@ function lines(data) {
     function updateHeight() {
         internal_counter = 0;
         var amount_clicked = getAmountClicked();
+        var total_selected_height = height * selected_heights[amount_clicked];
+        var total_unselected_height = height - total_selected_height;
         for (var name in graphs) {
             var tmp_height;
-            if(length === amount_clicked || amount_clicked === 0)
-                tmp_height = height/length;
-            else if(clicked[name])
-                tmp_height = ((height * 2)/3)/amount_clicked;
+            if(clicked[name])
+                tmp_height = total_selected_height/amount_clicked;
             else 
-                tmp_height = ((height)/3)/(length - amount_clicked); 
+                tmp_height = total_unselected_height/(length - amount_clicked);
             graphs[name].height(tmp_height);
         } 
     }
@@ -135,6 +139,8 @@ function lines(data) {
         packery_main.appended(element);
         
         var context = contextgraph().data(data)
+                .width(width)
+                .height(contextHeight)
                 .onChildBrushed(onChildBrushed);
                 
         d3.select(element).call(context);

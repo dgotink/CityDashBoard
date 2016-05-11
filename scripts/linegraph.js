@@ -340,6 +340,7 @@ function linegraph(){
     chart.width = function(value) {
     	if (!arguments.length) return width;
     	width = value;
+        padding = {'top': height/6, 'right': width/12, 'bottom': height/12, 'left': 40};
     	if (typeof updateWidth === 'function') updateWidth();
     	return chart;
     };
@@ -347,7 +348,7 @@ function linegraph(){
     chart.height = function(value) {
     	if (!arguments.length) return height;
     	height = value;
-        padding = {'top': height/6, 'right': 120, 'bottom': height/12, 'left': 40};
+        padding = {'top': height/6, 'right': width/12, 'bottom': height/12, 'left': 40};
     	if (typeof updateHeight === 'function') updateHeight();
     	return chart;
     };

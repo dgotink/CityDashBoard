@@ -1,12 +1,14 @@
 function contextgraph(){
     //variables
-    var width = 1000;
-    var height = 50;
+    var width;
+    var height;
     var padding = {'top': 0, 'right': 120, 'bottom': 10, 'left': 40};
     
     var data = [];   
     
     var updateData;
+    var updateWidth;
+    var updateHeight;
     
     var onChildBrushed;
 
@@ -106,6 +108,20 @@ function contextgraph(){
                 updateAxes();
                 updateBrush();
             };
+            
+            updateWidth = function() {
+                updateSvg();
+                scales();
+                updateAxes();
+                updateBrush(); 
+            };
+            
+            updateHeight = function() {
+                updateSvg();           
+                scales();
+                updateAxes();
+                updateBrush();
+            };
 
             svg();
             mapData();
@@ -119,6 +135,22 @@ function contextgraph(){
     	if (!arguments.length) return data;
     	data = value;
     	if (typeof updateData === 'function') updateData();
+    	return chart;
+    };
+    
+    chart.width = function(value) {
+    	if (!arguments.length) return width;
+    	width = value;
+        padding = {'top': height/6, 'right': width/12, 'bottom': height/12, 'left': 40};
+    	if (typeof updateWidth === 'function') updateWidth();
+    	return chart;
+    };
+    
+    chart.height = function(value) {
+    	if (!arguments.length) return height;
+    	height = value;
+        padding = {'top': height/6, 'right': width/12, 'bottom': height/12, 'left': 40};
+    	if (typeof updateHeight === 'function') updateHeight();
     	return chart;
     };
     
