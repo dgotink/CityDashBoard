@@ -20,7 +20,7 @@ function linegraph(){
     var showDataInformation;
     var updateDomain;
     
-    var _MIN_HEIGHT_NEEDED_FOR_AXIS = 100;
+    var _MIN_HEIGHT_NEEDED_FOR_AXIS = 50;
     
     //the function that makes the linegraph
     function chart(selection){
@@ -191,6 +191,7 @@ function linegraph(){
                 yAxis = d3.svg.axis()
                     .scale(yScale)
                     .orient("left")
+                    .tickSize(0)
                     .tickValues(yScale.domain());
             
                     svg.append('g')
@@ -218,7 +219,7 @@ function linegraph(){
                 container.selectAll('path')
                     .data(function(d) { return [d.data]; })
                     .attr('clip-path', 'url(#lineClip_' + data.name + ')')
-                    .transition().duration(800)
+                    //.transition().duration(800)
                     .attr('d', line);
             
                 //enter
@@ -232,7 +233,7 @@ function linegraph(){
                     .enter().append('path')
                     .attr('clip-path', 'url(#lineClip_' + data.name + ')')
                     .attr('d', line_animation)
-                    .transition().duration(1000)
+                    //.transition().duration(1000)
                     .attr('d', line);
             }
             

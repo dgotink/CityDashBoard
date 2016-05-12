@@ -3,21 +3,33 @@ function lines(data) {
     var length = data.length;
     var graphs = {};
     var clicked = {};
+    var context;
     
-    var width = window.innerWidth;
+    var width = calculateWidth();
     var contextHeight = 50;
     var height = calculateHeight();
     //this array contains the values to which you multiply the height to get the total height for all the selected linegraphs
-    //this array has a size the same as the amount of graphs drawn
+    //this array has a size the same as half the amount of graphs drawn +1 (for 0)
     //the index is the amount of selected graphs
-    var selected_heights = [0, 0.4, 0.55, 0.67, 0.76, 0.76, 0.76, 0.76];
+    var selected_heights = [0, 0.4, 0.55, 0.67, 0.76, 0.76, 0.76];
     
     var packery_main;
-    var packery_linegraphs;    
+    var packery_linegraphs;   
+    
+    window.addEventListener("resize", function(event) {
+        width = calculateWidth();
+        updateWidth();
+        height = calculateHeight();
+        updateHeight();
+    });
     
     function calculateHeight() {
         return window.innerHeight - contextHeight;
     }
+    
+    function calculateWidth() {
+        return window.innerWidth;
+    }   
     
     var onSizeChangedCallback = function(){
        internal_counter++;
@@ -28,8 +40,9 @@ function lines(data) {
     var onChildClick = function (name) {
         if(clicked[name])
             clicked[name] = false;
-        else
-            clicked[name] = true;
+        else 
+            if(getAmountClicked() < (selected_heights.length-1))
+                clicked[name] = true;
         updateHeight();
     };
     
@@ -71,6 +84,13 @@ function lines(data) {
         return amount_clicked;
     }
     
+    function updateWidth() {
+        for (var name in graphs) {
+            graphs[name].width(width);
+        }  
+        context.width(width);
+    }
+    
     function updateHeight() {
         internal_counter = 0;
         var amount_clicked = getAmountClicked();
@@ -97,12 +117,14 @@ function lines(data) {
         
         packery_main = new Packery( main, {
             // options
+            gutter: 0,
             columnWidth: window.innerWidth,
             itemSelector: '.main-item'
         });
         
         packery_linegraphs = new Packery( parent, {
             // options
+            gutter: 0,
             columnWidth: window.innerWidth,
             itemSelector: '.grid-item'
         });
@@ -138,7 +160,7 @@ function lines(data) {
         main.appendChild(element);
         packery_main.appended(element);
         
-        var context = contextgraph().data(data)
+        context = contextgraph().data(data)
                 .width(width)
                 .height(contextHeight)
                 .onChildBrushed(onChildBrushed);

@@ -32,7 +32,7 @@
 		}
 		
 		.svgbox { 
-                    border-style: outset;
+                    //border-style: outset;
 		}
 
                 .brush .extent {
@@ -42,7 +42,7 @@
                 }
                 
                 body { 
-                    margin: 0px
+                    margin: 0px;
                 }
                 
                 .main {
@@ -50,6 +50,14 @@
                 }
                 
                 .grid {
+                    margin: 0px;
+                }
+                
+                .main-item {
+                    margin: 0px;
+                }
+                
+                .grid-item {
                     margin: 0px;
                 }
                 
@@ -61,28 +69,28 @@
                 .lines {
                     vertical-align: top;
                 }
-                
-                .linegraph{
-                    //overflow:auto;
-                    //margin: 10px;
-                }
-
-		
+                	
 		</style>
 	</head>
 	<body>
 		<script type="text/javascript">
                 var count = 0;
-                var number_of_graphs = 7;
+                var number_of_graphs = 12;
                 var data = [];
                 
-               groupByX('red', 'created_at.$date', 'freespots', 'bikes_Brussel.json', 'free_bike_parking', loaded);
-               filterData('green', 'created_at.$date', 'temperature', 'weather_Brussel.json', 'temperature', loaded);
-               filterData('orange', 'created_at.$date', 'humidity', 'weather_Brussel.json', 'humidity', loaded);
-               filterData('darkblue', 'created_at.$date', 'cloudpercentage', 'weather_Brussel.json', 'cloudpercentage', loaded);
-               filterData('pink', 'created_at.$date', 'windspeed', 'weather_Brussel.json', 'windspeed', loaded);
-               filterData('lightblue', 'created_at.$date', 'pressure', 'weather_Brussel.json', 'airpressure', loaded);
-               groupByX('purple', 'created_at.$date', 'free_places', 'parkings_brussels.json', 'free_car_parking', loaded);
+               groupByX('red', 'created_at.$date', 'freespots', 'bikes_Brussel.json', '1', loaded);
+               filterData('green', 'created_at.$date', 'temperature', 'weather_Brussel.json', '2', loaded);
+               filterData('orange', 'created_at.$date', 'humidity', 'weather_Brussel.json', '3', loaded);
+               filterData('darkblue', 'created_at.$date', 'cloudpercentage', 'weather_Brussel.json', '4', loaded);
+               filterData('pink', 'created_at.$date', 'windspeed', 'weather_Brussel.json', '5', loaded);
+               filterData('lightblue', 'created_at.$date', 'pressure', 'weather_Brussel.json', '6', loaded);
+               groupByX('purple', 'created_at.$date', 'freespots', 'bikes_Brussel.json', '7', loaded);
+               filterData('gray', 'created_at.$date', 'temperature', 'weather_Brussel.json', '8', loaded);
+               filterData('darkred', 'created_at.$date', 'humidity', 'weather_Brussel.json', '9', loaded);
+               filterData('lightgreen', 'created_at.$date', 'cloudpercentage', 'weather_Brussel.json', '10', loaded);
+               filterData('darkgreen', 'created_at.$date', 'windspeed', 'weather_Brussel.json', '11', loaded);
+               filterData('brown', 'created_at.$date', 'pressure', 'weather_Brussel.json', '12', loaded);
+               //groupByX('purple', 'created_at.$date', 'free_places', 'parkings_brussels.json', 'free_car_parking', loaded);
 
                 function loaded(datum){
                     data.push(datum);

@@ -20,7 +20,9 @@ function contextgraph(){
             //scale vars
             var xScale;
             //axis var
-            var xAxis;
+            var axis_hour;
+            var axis_day;
+            var axis_label;
             //svg var
             var svg;
             var element = this;
@@ -58,19 +60,64 @@ function contextgraph(){
             }
             
             function axes() {                
-                xAxis = d3.svg.axis()
+                axis_hour = d3.svg.axis()
                     .scale(xScale)
-                    .orient("bottom");
+                    .orient("bottom")
+                    .ticks(d3.time.hour, 3)
+                    .tickFormat('') 
+                    .tickSize(8, 0);
             
-                    svg.append('g')
-                    .attr('class', 'axis')
-                    .attr('transform', 'translate(0, ' + (height - padding.bottom) + ')')
-                    .call(xAxis); 
+                axis_day = d3.svg.axis()
+                    .scale(xScale)
+                    .orient("bottom")
+                    .ticks(d3.time.day, 1)
+                    .tickFormat('') 
+                    .tickSize(30, 0);
+            
+                axis_label = d3.svg.axis()
+                    .scale(xScale)
+                    .orient("bottom")
+                    .ticks(d3.time.hour, 12)
+                    .tickSize(0)
+                    .tickPadding(30)
+                    .tickFormat(function (d) {
+                        if(d.getHours() === 12){
+                            if(d.getDate() === 1 || d.getDate() === xScale.domain()[0].getDate()){
+                                formatter = d3.time.format.utc('%a %d %b');
+                            }
+                            else {
+                                formatter = d3.time.format.utc('%a %d');
+                            }
+                            return formatter(d);
+                        }
+                        else
+                            return null;
+                       
+                    });
+            
+                svg.append('g')
+                    .attr('class', 'axis hours')
+                    .call(axis_hour); 
+            
+                svg.append('g')
+                    .attr('class', 'axis days')
+                    .call(axis_day); 
+            
+                svg.append('g')
+                    .attr('class', 'axis_label')
+                    .call(axis_label); 
             }
             
             function updateAxes() {
-                svg.select('g.axis')
-                   .call(xAxis);
+                axis_hour
+                    .scale(xScale);
+                svg.select('g.hours')
+                   .call(axis_hour);
+           
+                axis_day
+                    .scale(xScale);
+                svg.select('g.days')
+                   .call(axis_day);
             }
             
             function initBrush(){
