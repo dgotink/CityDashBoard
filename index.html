@@ -6,12 +6,12 @@
                 <script src="https://npmcdn.com/packery@2.0.0/dist/packery.pkgd.min.js"></script> 
                 <script src="http://draggabilly.desandro.com/draggabilly.pkgd.min.js"></script>               
                 <script src="scripts/data.js"></script>
-                <script src="scripts/filter.js"></script>
                 <script src="scripts/read.js"></script>
-                <script src="scripts/groupby.js"></script>
                 <script src="scripts/lines.js"></script>
                 <script src="scripts/linegraph.js"></script>
-                <script src="scripts/contextlinegraph.js"></script>
+                <script src="scripts/linegraph_base.js"></script>
+                <script src="scripts/linegraph_context.js"></script>
+                <script src="scripts/controller.js"></script>
 		<style type="text/css">
 		
 		.line {
@@ -36,13 +36,14 @@
 		}
 
                 .brush .extent {
-                    stroke: black;
-                    fill-opacity: .125;
+                    /*stroke: black;
+                    fill-opacity: .125;*/
                     shape-rendering: crispEdges;
                 }
                 
                 body { 
                     margin: 0px;
+                    overflow: hidden;
                 }
                 
                 .main {
@@ -54,6 +55,8 @@
                 }
                 
                 .main-item {
+                    border: 0px;
+                    padding: 0px;
                     margin: 0px;
                 }
                 
@@ -69,34 +72,45 @@
                 .lines {
                     vertical-align: top;
                 }
+                
+                .contextgraph {
+                    height: 50px;
+                }
                 	
 		</style>
 	</head>
 	<body>
 		<script type="text/javascript">
                 var count = 0;
-                var number_of_graphs = 12;
+                var number_of_graphs = 3;
                 var data = [];
                 
-               groupByX('red', 'created_at.$date', 'freespots', 'bikes_Brussel.json', '1', loaded);
-               filterData('green', 'created_at.$date', 'temperature', 'weather_Brussel.json', '2', loaded);
-               filterData('orange', 'created_at.$date', 'humidity', 'weather_Brussel.json', '3', loaded);
-               filterData('darkblue', 'created_at.$date', 'cloudpercentage', 'weather_Brussel.json', '4', loaded);
-               filterData('pink', 'created_at.$date', 'windspeed', 'weather_Brussel.json', '5', loaded);
-               filterData('lightblue', 'created_at.$date', 'pressure', 'weather_Brussel.json', '6', loaded);
-               groupByX('purple', 'created_at.$date', 'freespots', 'bikes_Brussel.json', '7', loaded);
-               filterData('gray', 'created_at.$date', 'temperature', 'weather_Brussel.json', '8', loaded);
-               filterData('darkred', 'created_at.$date', 'humidity', 'weather_Brussel.json', '9', loaded);
-               filterData('lightgreen', 'created_at.$date', 'cloudpercentage', 'weather_Brussel.json', '10', loaded);
-               filterData('darkgreen', 'created_at.$date', 'windspeed', 'weather_Brussel.json', '11', loaded);
-               filterData('brown', 'created_at.$date', 'pressure', 'weather_Brussel.json', '12', loaded);
+               //groupByX('red', 'created_at.$date', 'freespots', 'bikes_Brussel.json', '#_bike_spots', loaded);
+               filter('green', 'temperature', 'created_at.$date', 'temperature', 'weather_Brussel.json', 'temperature_brussel', loaded);
+               filter('red', 'temperature', 'created_at.$date', 'temperature', 'weather_Leuven.json', 'temperature_leuven', loaded);
+               filter('blue', 'temperature', 'created_at.$date', 'temperature', 'weather_Antwerpen.json', 'temperature_antwerpen', loaded);
+               
+               //filterData('orange', 'created_at.$date', 'humidity', 'weather_Brussel.json', 'humidity', loaded);
+               //filterData('darkblue', 'created_at.$date', 'cloudpercentage', 'weather_Brussel.json', 'cloudpercentage', loaded);
+               //filterData('pink', 'created_at.$date', 'windspeed', 'weather_Brussel.json', 'windspeed', loaded);
+               //filterData('lightblue', 'created_at.$date', 'pressure', 'weather_Brussel.json', 'pressure', loaded);
+               //groupByX('purple', 'created_at.$date', 'freespots', 'bikes_Brussel.json', '7', loaded);
+               //filterData('gray', 'created_at.$date', 'temperature', 'weather_Brussel.json', '8', loaded);
+               //filterData('darkred', 'created_at.$date', 'humidity', 'weather_Brussel.json', '9', loaded);
+               //filterData('lightgreen', 'created_at.$date', 'cloudpercentage', 'weather_Brussel.json', '10', loaded);
+               //filterData('darkgreen', 'created_at.$date', 'windspeed', 'weather_Brussel.json', '11', loaded);
+               //filterData('brown', 'created_at.$date', 'pressure', 'weather_Brussel.json', '12', loaded);
                //groupByX('purple', 'created_at.$date', 'free_places', 'parkings_brussels.json', 'free_car_parking', loaded);
 
                 function loaded(datum){
+                    var callb = function(data){
+                        controller(data);
+                    };
                     data.push(datum);
                     count++;
                     if(count === number_of_graphs)
-                        lines(data);
+                        base('black', data, 'temperature', callb);
+                        
                 }                
                 
 		</script>

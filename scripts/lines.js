@@ -1,7 +1,7 @@
 function lines(data) {
     var internal_counter;
-    var length = data.length;
     var graphs = {};
+    var length = Object.keys(graphs).length;
     var clicked = {};
     var context;
     
@@ -14,9 +14,12 @@ function lines(data) {
     var selected_heights = [0, 0.4, 0.55, 0.67, 0.76, 0.76, 0.76];
     
     var packery_main;
-    var packery_linegraphs;   
+    var packery_linegraphs; 
     
-    window.addEventListener("resize", function(event) {
+    var main_div;
+    var grid_div;
+       
+    window.addEventListener("resize", function() {
         width = calculateWidth();
         updateWidth();
         height = calculateHeight();
@@ -38,13 +41,51 @@ function lines(data) {
     };
     
     var onChildClick = function (name) {
+        averageClicked(name);
         if(clicked[name])
             clicked[name] = false;
         else 
             if(getAmountClicked() < (selected_heights.length-1))
-                clicked[name] = true;
-        updateHeight();
+                clicked[name] = true;    
+        updateHeight();       
     };
+    
+    function averageClicked(name){
+        if(clicked[name]){
+            //remove
+        }
+        else {
+            data.forEach(function(datum) { 
+                if(datum.name === name){
+                    datum.source.forEach(function(src){
+                        var element = document.createElement('div');
+                        element.setAttribute('class', 'linegraph grid-item ' + name);
+                        grid_div.appendChild(element);
+                        packery_linegraphs.appended(element);
+                
+                        var draggie = new Draggabilly( element );
+                        packery_linegraphs.bindDraggabillyEvents( draggie );
+                
+                        graphs[src.name] = linegraph()
+                            .data(src)
+                            .width(width)
+                            .height(height)
+                            .onChildClick(onChildClick)
+                            .onChildEnter(onChildEnter)
+                            .onChildLeave(onChildLeave)
+                            .onChildMove(onChildMove)
+                            .onSizeChangedCallback(onSizeChangedCallback);
+                
+                        d3.select(element)
+                            .call(graphs[src.name]);
+                
+                        clicked[src.name] = false;        
+                    });                      
+                }             
+            }); 
+        }
+        
+    }
     
     var onChildEnter = function () {
         d3.selectAll('.data_information')
@@ -104,45 +145,46 @@ function lines(data) {
                 tmp_height = total_unselected_height/(length - amount_clicked);
             graphs[name].height(tmp_height);
         } 
+        packery_linegraphs.layout();
     }
     
     function init() {
-        var main = document.createElement('div');
-        main.setAttribute('class', 'main');
-        document.body.appendChild(main);
+        main_div = document.createElement('div');
+        main_div.setAttribute('class', 'main');
+        document.body.appendChild(main_div);
         //make the div that will contain all the linedivs
-        var parent = document.createElement('div');
-        parent.setAttribute('class', 'lines grid main-item');
-        main.appendChild(parent);
+        grid_div = document.createElement('div');
+        grid_div.setAttribute('class', 'lines grid main-item');
+        main_div.appendChild(grid_div);
         
-        packery_main = new Packery( main, {
+        packery_main = new Packery( main_div, {
             // options
             gutter: 0,
             columnWidth: window.innerWidth,
             itemSelector: '.main-item'
         });
         
-        packery_linegraphs = new Packery( parent, {
+        packery_linegraphs = new Packery( grid_div, {
             // options
             gutter: 0,
             columnWidth: window.innerWidth,
             itemSelector: '.grid-item'
         });
         
-        packery_main.appended(packery_linegraphs);
+        packery_main.appended(packery_linegraphs);      
         
         data.forEach(function(datum) { 
             var element = document.createElement('div');
                 element.setAttribute('class', 'linegraph grid-item');
-                parent.appendChild(element);
+                grid_div.appendChild(element);
                 packery_linegraphs.appended(element);
                 
                 var draggie = new Draggabilly( element );
                 packery_linegraphs.bindDraggabillyEvents( draggie );
                 
-                graphs[datum.name] = linegraph().data(datum)
+                graphs[datum.name] = linegraph_average().data(datum)
                         .width(width)
-                        .height(height/length)
+                        .height(height)
                         .onChildClick(onChildClick)
                         .onChildEnter(onChildEnter)
                         .onChildLeave(onChildLeave)
@@ -152,12 +194,12 @@ function lines(data) {
                 d3.select(element)
                     .call(graphs[datum.name]);
                 
-                clicked[datum.name] = false; 
+                clicked[datum.name] = false;           
         });
         
         var element = document.createElement('div')
         element.setAttribute('class', 'contextgraph main-item');
-        main.appendChild(element);
+        main_div.appendChild(element);
         packery_main.appended(element);
         
         context = contextgraph().data(data)
@@ -167,7 +209,7 @@ function lines(data) {
                 
         d3.select(element).call(context);
         
-        packery_linegraphs.layout();
+        updateHeight();
         packery_main.layout();
     }
     

@@ -4,7 +4,9 @@ function linegraph(){
     var height;
     var padding = {'top': 0, 'right': 0, 'bottom': 0, 'left': 0};
     
-    var data = {};   
+    var data = {};  
+    
+    var element;
    
     //parent callback functions
     var onChildClick;   
@@ -40,7 +42,7 @@ function linegraph(){
             //svg var
             var svg;
             var lineRect;
-            var element = this;
+            element = this;
             //clip var
             var clipRect;
             //label var
@@ -387,6 +389,10 @@ function linegraph(){
     chart.updateDomain = function(value){
         updateDomain(value);
         return chart;
+    };
+    
+    chart.element = function(){
+        return element;
     };
     
     return chart;    
