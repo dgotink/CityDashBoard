@@ -34,6 +34,7 @@ function linegraph_base(){
             //mapped data vars
             var mapped_data_x;
             var mapped_data_y;
+            var data_trendline;
             //scale vars
             var scale_x;
             var scale_y;
@@ -57,6 +58,7 @@ function linegraph_base(){
             //bisect var
             var bisect = d3.bisector(function(d) { return timeFormat.parse(d.x); }).left;
             
+            //-------SVG METHODS--------
             function initSvg(){
                 //make the svg
                 svg = d3.select(element)
@@ -64,6 +66,7 @@ function linegraph_base(){
                     .attr('width', width)
                     .attr('height', height)
                     .attr('class', 'svgbox')
+                    .style('display', 'block')
                     .on('click', onClick);
             
                 var clip = svg.append('clipPath')
@@ -90,6 +93,7 @@ function linegraph_base(){
             
             function updateSvg(){
                 svg
+                    //.transition().duration(1000)
                     .attr('width', width)
                     .attr('height', height);
             
@@ -105,6 +109,7 @@ function linegraph_base(){
                     .attr('height', height);               
             }
             
+            //-------LABEL METHODS--------
             function initLabel(){
                 var margin = 10;
                 label = svg.append('text')
@@ -113,7 +118,7 @@ function linegraph_base(){
                     .style('font-size','12px')
                     .style('fill', color)
                     .text(name)
-                    .attr('x', (width - padding.right) + 10)
+                    .attr('x', (width - padding.right) + margin)
                     .attr('y', height);
             }
             
@@ -125,6 +130,7 @@ function linegraph_base(){
                     .attr('y', scale_y(data[index].y));
             }
             
+            //-------INDICATOR METHODS--------
             //initiliaze the mouse_indicator rectangle
             function initIndicator(){
                 mouse_indicator = svg.append('rect')
@@ -159,9 +165,38 @@ function linegraph_base(){
                     .attr('height', height);
             }
             
+            //-------SCALE METHODS--------
             function mapData(){
                 mapped_data_x = data.map(function(d) { return timeFormat.parse(d.x); });
                 mapped_data_y = data.map(function(d) { return d.y; });
+                
+                var series_x = d3.range(1, mapped_data_x.length + 1);
+                data_trendline = leastSquares(series_x, mapped_data_y);
+            }
+            
+            function initTrendline(){
+		var trendline = svg.append('g')
+                        .attr('class', 'trendlinegroup');
+			
+		trendline.append('line')
+			.attr('class', 'trendline')
+			.attr('stroke', color)
+			.attr('stroke-width', 1.5)
+                        .style('opacity', 0.2);
+            }
+            
+            function updateTrendline(){
+                // apply the reults of the least squares regression            
+		var x1 = mapped_data_x[0];
+		var y1 = data_trendline[0] + data_trendline[1];
+		var x2 = mapped_data_x[mapped_data_x.length - 1];
+		var y2 = data_trendline[0] * mapped_data_x.length + data_trendline[1];              
+		
+		var trendline = svg.select('g.trendlinegroup')
+			
+		trendline.select('.trendline')
+			.attr('x1', scale_x(x1)).attr('y1', scale_y(y1))
+                        .attr('x2', scale_x(x2)).attr('y2', scale_y(y2))
             }
             
             function scales(){
@@ -183,6 +218,7 @@ function linegraph_base(){
                     .y(function(d){ return scale_y(d.y); });  
             }
             
+            //-------AXIS METHODS--------
             function initAxis() {                
                 axis_y = d3.svg.axis()
                     .scale(scale_y)
@@ -204,6 +240,7 @@ function linegraph_base(){
                 
             }
             
+            //-------LINE METHODS--------
             function draw() {
                 var container = svg.append('g')
                         .style('stroke', color)
@@ -218,13 +255,14 @@ function linegraph_base(){
             }
             
             function redraw(){
-                var container = svg.select('g.line')
+                var container = svg.select('g.line');
                 
                 container.select('path')
                     //.transition().duration(800)
                     .attr('d', line(data));
             }
             
+            //-------DATA INFORMATION METHODS--------
             function initDataInformation(){
                 data_information_group = svg.append('g')
                     .attr("pointer-events", "none")
@@ -264,9 +302,7 @@ function linegraph_base(){
                     .attr('cx', scale_x(timeFormat.parse(dataset.x)))
                     .attr('cy', scale_y(dataset.y));
             };
-            
-            
-            
+      
             //-------ON EVENTS--------
             function onClick(){
                 onMouseClick(name);
@@ -291,6 +327,7 @@ function linegraph_base(){
                 updateAxis();
                 updateLabel();
                 redraw();
+                updateTrendline();
             };
             
             updateData = function(){
@@ -299,6 +336,7 @@ function linegraph_base(){
                 updateAxis();
                 redraw();
                 updateLabel();
+                updateTrendline();
             };
             
             updateWidth = function(){
@@ -307,6 +345,7 @@ function linegraph_base(){
                 updateAxis();
                 redraw();
                 updateLabel();
+                updateTrendline();
             };
             
             updateHeight = function(){
@@ -316,6 +355,7 @@ function linegraph_base(){
                 redraw();
                 updateLabel();
                 updateIndicator();
+                updateTrendline();
             };
 
             initSvg();
@@ -326,6 +366,7 @@ function linegraph_base(){
             initLabel();
             initIndicator();
             initDataInformation();
+            initTrendline();
             
             //returns the closest object to the value
             function closestDataPointToValueX(object1, object2, value){

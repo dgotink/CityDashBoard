@@ -21,6 +21,8 @@ function controller(data) {
     var context_div;
     var context_graph;
     var context_height = 50;
+    //just for the sake of simplicity keep a height - contextheight
+    var grid_height = height - context_height;
     
     //init
     function init(){
@@ -110,7 +112,7 @@ function controller(data) {
             //create a div and append it to div_grid and packery_grid
             var element = document.createElement('div');
             element.setAttribute('id', name);
-            element.setAttribute('class', 'grid-item base');
+            element.setAttribute('class', 'grid-item base-' + name);
             div_grid.appendChild(element);
             packery_grid.appended(element);
             //make the grid item draggable    
@@ -123,7 +125,7 @@ function controller(data) {
                 .setDomain(context_graph.getDomain())
                 .setData(map_data[name])
                 .setWidth(width)
-                .setHeight(height)
+                .setHeight(1)
                 .setOnClick(onClickBaseLineGraph)
                 .setOnMouseEnter(onMouseEnterLineGraph)
                 .setOnMouseMove(onMouseMoveLineGraph)
@@ -160,7 +162,7 @@ function controller(data) {
                 .setDomain(context_graph.getDomain())
                 .setData(map_data[name])
                 .setWidth(width)
-                .setHeight(height) 
+                .setHeight(1) 
                 .setOnClick(onClickLineGraph)
                 .setOnMouseEnter(onMouseEnterLineGraph)
                 .setOnMouseMove(onMouseMoveLineGraph)
@@ -170,6 +172,20 @@ function controller(data) {
             //make the selected boolean and add it to the map_selected    
             map_selected[name] = false;           
         });
+        //set the item order so the linegraphs appear under the acording base graph
+        var items = packery_grid.items;
+        var index = -1;
+        for(var i = 0; i < items.length; i++){
+            var element = items[i].element;
+            if (element.classList.contains('base-' + theme))
+                index = i;  
+            if (element.classList.contains(theme)){
+                if(index >= 0){
+                    var item = items.splice(i, 1);
+                    items.splice(index+1, 0, item[0]);
+                }
+            }           
+        }
         updateHeight();
     }
     
@@ -202,8 +218,8 @@ function controller(data) {
         //get the amount of selected graphs
         var amount_selected = findAmountSelected();
         //determine the amount of space allocated to selected- and unselected graphs
-        var total_selected_height = (height - context_height) * selected_heights[amount_selected];
-        var total_unselected_height = (height - context_height) - total_selected_height;
+        var total_selected_height = grid_height * selected_heights[amount_selected];
+        var total_unselected_height = grid_height - total_selected_height;
         //for every graph in map_graph
         for (var key in map_graph) {
             //determine the new height
@@ -216,7 +232,7 @@ function controller(data) {
             map_graph[key].setHeight(new_height);
         } 
         //re-layout the packery module (since the sizes of the items have changed)
-        packery_grid.layout();
+        packery_grid.layout();       
     }
     
     //the on click event for the base linegraphs

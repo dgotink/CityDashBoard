@@ -10,7 +10,7 @@ var filter = function(color, theme, xName, yName, input, name, callback){
     read(input, method);
 };
 
-var groupByX = function (color, xName, yName, input, name, callback){
+var groupByX = function (color, theme, xName, yName, input, name, callback){
     var method = function(data){
         var dic = {};
         var dataArr = data.data;
@@ -30,7 +30,7 @@ var groupByX = function (color, xName, yName, input, name, callback){
                     dic[x] = y;
             }     
         });
-        var out = { "name": name, "color": color, "data": getArr(dic) };
+        var out = { 'name': name, 'color': color, 'theme': theme, 'data': getArr(dic) };
         callback(out);
     };   
     read(input, method);
