@@ -43,6 +43,8 @@
                 body { 
                     margin: 0px;
                     overflow: hidden;
+                    font-family: jaf-bernino-sans-narrow,BerninoSans-NarrowRegular,"Bernino Sans Narrow","Helvetica Neue",Helvetica,Arial,sans-serif;
+                    font-size: 0.8em;
                 }
                 
                 .main {
@@ -81,15 +83,16 @@
 	<body>
 		<script type="text/javascript">
                 var count = 0;
-                var number_of_datas = 6;
+                var number_of_datas = 9;
                 var data_dictionary = {};
                 var data_arr = [];
                 data_dictionary['temperature'] = [];
                 data_dictionary['humidity'] = [];
+                data_dictionary['pressure'] = [];
                 
-                var red = ['#FF0000', '#E85132']
-                var blue = ['#0000FF', '#6D32E8']
-                var green = ['#00FF00', '#32E86F']
+                var red = ['#B22D17', '#FF715A', '#FF593E']
+                var blue = ['#303EB2', '#7887FF', '#6273FF']
+                var green = ['#1AB21A', '#5DFF5E', '#41FF42']
                 
                filter(green[0], 'temperature', 'created_at.$date', 'temperature', 'weather_Brussel.json', 'temperature_brussel', loaded);
                filter(red[0], 'temperature', 'created_at.$date', 'temperature', 'weather_Leuven.json', 'temperature_leuven', loaded);
@@ -99,9 +102,13 @@
                filter(red[1], 'humidity', 'created_at.$date', 'humidity', 'weather_Leuven.json', 'humidity_leuven', loaded);
                filter(blue[1], 'humidity', 'created_at.$date', 'humidity', 'weather_Antwerpen.json', 'humidity_antwerpen', loaded);
                
-               /*groupByX('darkgreen', 'bike-spots', 'created_at.$date', 'freespots', 'bikes_Brussel.json', 'bike-spots_brussel', loaded);
-               groupByX('darkblue', 'bike-spots', 'created_at.$date', 'freespots', 'bikes_Antwerpen.json', 'bike-spots_antwerpen', loaded);*/
-
+               filter(green[2], 'pressure', 'created_at.$date', 'pressure', 'weather_Brussel.json', 'pressure_brussel', loaded);
+               filter(red[2], 'pressure', 'created_at.$date', 'pressure', 'weather_Leuven.json', 'pressure_leuven', loaded);
+               filter(blue[2], 'pressure', 'created_at.$date', 'pressure', 'weather_Antwerpen.json', 'pressure_antwerpen', loaded);
+               
+               /*groupByX(green[2], 'bike-spots', 'created_at.$date', 'freespots', 'bikes_Brussel.json', 'bike-spots_brussel', loaded);
+               groupByX(blue[2], 'bike-spots', 'created_at.$date', 'freespots', 'bikes_Antwerpen.json', 'bike-spots_antwerpen', loaded);
+*/
 
                 function loaded(datum){
                     data_dictionary[datum['theme']].push(datum);
