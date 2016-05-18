@@ -38,6 +38,7 @@ function linegraph_base(){
             //scale vars
             var scale_x;
             var scale_y;
+            var scale_color;
             //axs var
             var axis_y;
             //line function vars
@@ -174,30 +175,7 @@ function linegraph_base(){
                 data_trendline = leastSquares(series_x, mapped_data_y);
             }
             
-            function initTrendline(){
-		var trendline = svg.append('g')
-                        .attr('class', 'trendlinegroup');
-			
-		trendline.append('line')
-			.attr('class', 'trendline')
-			.attr('stroke', color)
-			.attr('stroke-width', 1.5)
-                        .style('opacity', 0.2);
-            }
             
-            function updateTrendline(){
-                // apply the reults of the least squares regression            
-		var x1 = mapped_data_x[0];
-		var y1 = data_trendline[0] + data_trendline[1];
-		var x2 = mapped_data_x[mapped_data_x.length - 1];
-		var y2 = data_trendline[0] * mapped_data_x.length + data_trendline[1];              
-		
-		var trendline = svg.select('g.trendlinegroup')
-			
-		trendline.select('.trendline')
-			.attr('x1', scale_x(x1)).attr('y1', scale_y(y1))
-                        .attr('x2', scale_x(x2)).attr('y2', scale_y(y2))
-            }
             
             function scales(){
                 scale_x = d3.time.scale()
@@ -208,6 +186,10 @@ function linegraph_base(){
                 scale_y = d3.scale.linear()
                     .domain(d3.extent(mapped_data_y))
                     .range([height - padding.bottom, padding.top]);
+            
+                scale_color = d3.scale.linear()
+                    .domain(d3.extent(mapped_data_y))
+                    .range(['#EEEEEE', color]);               
             
                 line_animation = d3.svg.line().interpolate('linear')
                     .x(function(d){ return scale_x(timeFormat.parse(d.x)); })
@@ -241,7 +223,7 @@ function linegraph_base(){
             }
             
             //-------LINE METHODS--------
-            function draw() {
+            function drawLine() {
                 var container = svg.append('g')
                         .style('stroke', color)
                         .attr('pointer-events', 'none')
@@ -254,12 +236,94 @@ function linegraph_base(){
                     .attr('d', line(data));
             }
             
-            function redraw(){
+            function redrawLine(){
                 var container = svg.select('g.line');
                 
-                container.select('path')
+                container.selectAll('path')
                     //.transition().duration(800)
                     .attr('d', line(data));
+            }           
+            
+            
+            
+            //-------TILES METHODS--------
+            function getStepsDateArr(amount){
+                var arr = [];
+                var step = (domain[1]-domain[0])/amount;
+                for(var i = 0; i < amount; i++){
+                    var add = step * i;
+                    arr[i] = new Date(domain[0].getTime() + add);
+                }
+                arr[amount] = domain[1];
+                return arr;
+            }
+            
+            function getStepsIndicesArr(date_arr){
+                var arr = [];
+                date_arr.forEach(function(entry, i){
+                    var index = bisect(data, entry);
+                    arr[i] = index;
+                });               
+                return arr;
+            }
+            
+            function getAveragesArr(amount, indices_arr){
+                var arr = [];
+                for(var i = 0; i <= amount; i++){
+                    var begin = indices_arr[i];
+                    var end = indices_arr[i+1];
+                    if(end === undefined) end = begin;
+                    var tmp = 0;
+                    var am = 0;
+                    for(var ii = begin; ii <= end; ii++){
+                       tmp += data[ii].y; 
+                       am++;
+                    }                   
+                    tmp = tmp/am;
+                    arr[i] = tmp;
+                }
+                return arr;
+            }
+            
+            function drawTiles() {
+                var amount = 100;
+                var steps_date = getStepsDateArr(amount);
+                var steps_indices = getStepsIndicesArr(steps_date);
+                var averages = getAveragesArr(amount, steps_indices);
+                removeTiles();
+                
+                var container = svg.append('g')
+                        .attr('pointer-events', 'none')
+                        .attr('class', 'tiles');
+                
+                for(var i = 0; i <= amount; i++){
+                    var current = scale_x(steps_date[i]);
+                    var prev = steps_date[i-1];
+                    if(prev !== undefined)
+                        prev = scale_x(prev);
+                    else prev = current;
+                    var next = steps_date[i+1];
+                    if(next !== undefined)
+                        next = scale_x(next);
+                    else next = current;
+                    
+                    var x1 = (prev + current)/2;
+                    var x2 = (current + next)/2;
+                    
+                    var tmp_width = x2 - x1;
+
+                    container.append('rect')
+                            .attr('class', 'tile')
+                            .attr('x', x1)
+                            .attr('width', tmp_width)
+                            .attr('y', padding.top)
+                            .attr('height', height - padding.bottom)
+                            .style('fill', scale_color(averages[i]));
+                }
+            }
+            
+            function removeTiles(){
+                svg.select('.tiles').remove();
             }
             
             //-------DATA INFORMATION METHODS--------
@@ -302,6 +366,33 @@ function linegraph_base(){
                     .attr('cx', scale_x(timeFormat.parse(dataset.x)))
                     .attr('cy', scale_y(dataset.y));
             };
+            
+            //-------TRENDLINE METHODS--------
+            function initTrendline(){
+		var trendline = svg.append('g')
+                        .attr('class', 'trendlinegroup')
+                        .style('stroke', color);
+			
+		trendline.append('line')
+			.attr('class', 'trendline')
+                        .attr('clip-path', 'url(#clip_' + name + ')')
+			.attr('stroke-width', 1.5)
+                        .style('opacity', 0.2);
+            }
+            
+            function updateTrendline(){
+                // apply the reults of the least squares regression            
+		var x1 = mapped_data_x[0];
+		var y1 = data_trendline[0] + data_trendline[1];
+		var x2 = mapped_data_x[mapped_data_x.length - 1];
+		var y2 = data_trendline[0] * mapped_data_x.length + data_trendline[1];
+		
+		var trendline = svg.select('g.trendlinegroup');
+			
+		trendline.select('.trendline')
+			.attr('x1', scale_x(x1)).attr('y1', scale_y(y1))
+                        .attr('x2', scale_x(x2)).attr('y2', scale_y(y2));
+            }
       
             //-------ON EVENTS--------
             function onClick(){
@@ -326,7 +417,8 @@ function linegraph_base(){
                 scale_x.domain(domain);
                 updateAxis();
                 updateLabel();
-                redraw();
+                //redrawLine();
+                drawTiles();
                 updateTrendline();
             };
             
@@ -334,7 +426,8 @@ function linegraph_base(){
                 mapData();
                 scales();
                 updateAxis();
-                redraw();
+                //redrawLine();
+                drawTiles();
                 updateLabel();
                 updateTrendline();
             };
@@ -343,7 +436,8 @@ function linegraph_base(){
                 updateSvg();
                 scales();
                 updateAxis();
-                redraw();
+                //redrawLine();
+                drawTiles();
                 updateLabel();
                 updateTrendline();
             };
@@ -352,7 +446,8 @@ function linegraph_base(){
                 updateSvg();
                 scales();
                 updateAxis();
-                redraw();
+                //redrawLine();
+                drawTiles();
                 updateLabel();
                 updateIndicator();
                 updateTrendline();
@@ -362,7 +457,8 @@ function linegraph_base(){
             mapData();
             scales();
             initAxis();
-            draw();
+            //drawLine();
+            drawTiles();
             initLabel();
             initIndicator();
             initDataInformation();

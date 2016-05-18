@@ -87,13 +87,17 @@
                 data_dictionary['temperature'] = [];
                 data_dictionary['humidity'] = [];
                 
-               filter('green', 'temperature', 'created_at.$date', 'temperature', 'weather_Brussel.json', 'temperature_brussel', loaded);
-               filter('red', 'temperature', 'created_at.$date', 'temperature', 'weather_Leuven.json', 'temperature_leuven', loaded);
-               filter('blue', 'temperature', 'created_at.$date', 'temperature', 'weather_Antwerpen.json', 'temperature_antwerpen', loaded);
+                var red = ['#FF0000', '#E85132']
+                var blue = ['#0000FF', '#6D32E8']
+                var green = ['#00FF00', '#32E86F']
+                
+               filter(green[0], 'temperature', 'created_at.$date', 'temperature', 'weather_Brussel.json', 'temperature_brussel', loaded);
+               filter(red[0], 'temperature', 'created_at.$date', 'temperature', 'weather_Leuven.json', 'temperature_leuven', loaded);
+               filter(blue[0], 'temperature', 'created_at.$date', 'temperature', 'weather_Antwerpen.json', 'temperature_antwerpen', loaded);
                
-               filter('green', 'humidity', 'created_at.$date', 'humidity', 'weather_Brussel.json', 'humidity_brussel', loaded);
-               filter('red', 'humidity', 'created_at.$date', 'humidity', 'weather_Leuven.json', 'humidity_leuven', loaded);
-               filter('blue', 'humidity', 'created_at.$date', 'humidity', 'weather_Antwerpen.json', 'humidity_antwerpen', loaded);
+               filter(green[1], 'humidity', 'created_at.$date', 'humidity', 'weather_Brussel.json', 'humidity_brussel', loaded);
+               filter(red[1], 'humidity', 'created_at.$date', 'humidity', 'weather_Leuven.json', 'humidity_leuven', loaded);
+               filter(blue[1], 'humidity', 'created_at.$date', 'humidity', 'weather_Antwerpen.json', 'humidity_antwerpen', loaded);
                
                /*groupByX('darkgreen', 'bike-spots', 'created_at.$date', 'freespots', 'bikes_Brussel.json', 'bike-spots_brussel', loaded);
                groupByX('darkblue', 'bike-spots', 'created_at.$date', 'freespots', 'bikes_Antwerpen.json', 'bike-spots_antwerpen', loaded);*/
