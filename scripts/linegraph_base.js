@@ -4,30 +4,32 @@ function linegraph_base(){
     var color;
     var domain;
     var data;
+    var element;
     var width;
     var height;
     var padding = {'top': 0, 'right': 0, 'bottom': 0, 'left': 0};
-    
+    //update function vars
     var updateData;
     var updateWidth;
     var updateHeight;
     var updateDomain;
-    
+    //indicator vars
     var moveIndicator;
     var showIndicator;
     var hideIndicator;
-    
+    //data information vars
     var moveDataInformation;
     var showDataInformation;
     var hideDataInformation;
-    
+    //mouse event vars
     var onMouseClick;
     var onMouseEnter;
     var onMouseMove;
     var onMouseLeave;
-    
+    //command vars
+    var swapLinesCommand;    
+    //constant value vars
     var MINIMUM_SIZE_NEEDED_FOR_LINE = 50;
-
 
     //the function that makes the linegraph
     function chart(selection){
@@ -47,14 +49,16 @@ function linegraph_base(){
             var line;          
             //svg and element var
             var svg;
-            var clip_linepath;
-            var element = this;
+            element = this;
+            var clip_linepath;           
             //label var
             var label;
             //mouse information vars
             var mouse_indicator;
             var indicator_box;
             var data_information_group;
+            //command vars
+            var trendFocus = false;
             //timeformat var
             var timeFormat = d3.time.format('%Y-%m-%dT%H:%M:%S.%LZ');
             //bisect var
@@ -295,8 +299,7 @@ function linegraph_base(){
                        if(data[ii] !== undefined){
                           tmp += data[ii].y; 
                           am++; 
-                       }
-                       
+                       }                      
                     }                   
                     tmp = tmp/am;
                     arr[i] = tmp;
@@ -374,7 +377,7 @@ function linegraph_base(){
             }
             
             showDataInformation = function(){
-                if(height >= MINIMUM_SIZE_NEEDED_FOR_LINE)
+                if(height >= MINIMUM_SIZE_NEEDED_FOR_LINE && trendFocus !== true)
                     data_information_group
                         .style('visibility', 'visible');
             };
@@ -390,17 +393,17 @@ function linegraph_base(){
                 var dataset = closestDataPointToValueX(data[index-1], data[index], date); 
 
                 var txt = data_information_group.select('.datatext')
-                    .attr('x', scale_x(timeFormat.parse(dataset.x)) + 15)
+                    .attr('x', scale_x(timeFormat.parse(dataset.x)) + 20)
                     .attr('y', scale_y(dataset.y) + 4)
                     .text(dataset.y.toFixed(2));
             
                 var bounding_box = txt.node().getBBox();
                 
                 data_information_group.select('.databox')
-                    .attr('x', bounding_box.x)
-                    .attr('y', bounding_box.y)
-                    .attr('width', bounding_box.width)
-                    .attr('height', bounding_box.height);
+                    .attr('x', bounding_box.x -5)
+                    .attr('y', bounding_box.y -2)
+                    .attr('width', bounding_box.width +10)
+                    .attr('height', bounding_box.height +4);
                     
                 data_information_group.select('.datacircle')
                     .attr('cx', scale_x(timeFormat.parse(dataset.x)))
@@ -408,7 +411,7 @@ function linegraph_base(){
             
                 data_information_group.select('.dataline')
                     .attr('x1', scale_x(timeFormat.parse(dataset.x)))
-                    .attr('x2', bounding_box.x)
+                    .attr('x2', bounding_box.x -5)
                     .attr('y1', scale_y(dataset.y))
                     .attr('y2', scale_y(dataset.y));
             };
@@ -431,13 +434,13 @@ function linegraph_base(){
             function initTrendline(){
 		var trendline = svg.append('g')
                         .attr('class', 'trendlinegroup')
-                        .style('stroke', color);
+                        .style('stroke', color)
+                        .style('opacity', 0.2);
 			
 		trendline.append('path')
 			.attr('class', 'trendline')
                         .attr('clip-path', 'url(#clip_' + name + ')')
-			.attr('stroke-width', 1.5)
-                        .style('opacity', 0.2)
+			.attr('stroke-width', 1.5) 
                         .style('fill', 'none');
             }
             
@@ -487,6 +490,31 @@ function linegraph_base(){
                 onMouseLeave();
             }
             
+            //
+            swapLinesCommand = function(){
+                if(trendFocus){
+                    trendFocus = false;
+
+                       svg.select('g.trendlinegroup')
+                            .transition().duration(1000)
+                            .style('opacity', 0.2);
+                        svg.select('g.line')
+                            .transition().duration(1000)
+                            .style('opacity', 1); 
+                                       
+                } else {
+                    trendFocus = true;
+
+                       svg.select('g.trendlinegroup')
+                            .transition().duration(1000)
+                            .style('opacity', 1);
+                        svg.select('g.line')
+                            .transition().duration(1000)
+                            .style('opacity', 0.2); 
+                    
+                }
+            };
+            
             //-------UPDATE EVENTS--------
             updateDomain = function(){
                 scale_x.domain(domain);
@@ -527,10 +555,13 @@ function linegraph_base(){
             
             function checkMinimunHeightRequirements(){
                 if(height < MINIMUM_SIZE_NEEDED_FOR_LINE){
+                    svg.select('g.trendlinegroup').style('visibility', 'hidden');
                     svg.select('.axis').style('visibility', 'hidden');
                     hideDataInformation();
                 } else {
+                    svg.select('g.trendlinegroup').style('visibility', 'visible');
                     svg.select('.axis').style('visibility', 'visible');
+                    showDataInformation();
                 }
             }
 
@@ -571,6 +602,10 @@ function linegraph_base(){
         data = value;
         if (typeof updateData === 'function') updateData();
         return chart;
+    };
+    
+    chart.getElement = function(){
+        return element;
     };
     
     chart.setWidth = function(value){
@@ -643,5 +678,9 @@ function linegraph_base(){
         return chart;
     };
      
+    chart.swapLines = function(){
+        swapLinesCommand();
+        return chart;
+    };
     return chart;
 }

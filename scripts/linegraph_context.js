@@ -40,14 +40,15 @@ function linegraph_context(){
                     .append('svg')
                     .attr('width', width)
                     .attr('height', height)
-                    .attr('class', 'svgbox'),
+                    .attr('class', 'svgbox');
                 
                 svg.append('rect')
+                    .attr('class', 'background')
                     .attr('x', 0)
                     .attr('y', 0)
                     .attr('width', width)
                     .attr('height', height)
-                    .style('fill', 'lightgray')
+                    .style('fill', '#EEEEEE')
                     .style('stroke', 'black')
                     .style('stroke-width', 1.5);
                                                 
@@ -58,6 +59,10 @@ function linegraph_context(){
                     //.transition().duration(1000)
                     .attr("width", width)
                     .attr("height", height);
+            
+                svg.select('.background')
+                    .attr("width", width)
+                    .attr("height", height);               
             }
             
             function rearrangeData(){
@@ -221,7 +226,7 @@ function linegraph_context(){
     chart.setWidth = function(value) {
     	if (!arguments.length) return width;
     	width = value;
-        padding = {'top': height/6, 'right': width/12, 'bottom': height/12, 'left': 40};
+        padding = {'top': height/12, 'right': width/12, 'bottom': height/12, 'left': 40};
     	if (typeof updateWidth === 'function') updateWidth();
     	return chart;
     };
@@ -229,7 +234,7 @@ function linegraph_context(){
     chart.setHeight = function(value) {
     	if (!arguments.length) return height;
     	height = value;
-        padding = {'top': height/6, 'right': width/12, 'bottom': height/12, 'left': 40};
+        padding = {'top': height/12, 'right': width/12, 'bottom': height/12, 'left': 40};
     	if (typeof updateHeight === 'function') updateHeight();
     	return chart;
     };

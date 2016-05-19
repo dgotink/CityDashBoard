@@ -1,4 +1,4 @@
-function controller(data) {   
+function controller(data, cities) {   
     //data map vars and length
     var map_color = {};
     var map_theme = {};
@@ -21,8 +21,12 @@ function controller(data) {
     var context_div;
     var context_graph;
     var context_height = 50;
+    //buttongroup vars
+    var buttonbar_div;
+    var buttonbar_graph;
+    var buttonbar_height = 50;
     //just for the sake of simplicity keep a height - contextheight
-    var grid_height = height - context_height;
+    var grid_height = height - context_height - buttonbar_height;
     
     //init
     function init(){
@@ -44,6 +48,16 @@ function controller(data) {
             columnWidth : width,
             itemSelector: '.main-item'
         });
+        //create the buttonbar
+        buttonbar_div = document.createElement('div');
+        buttonbar_div.setAttribute('class', 'buttonbar main-item');        
+        buttonbar_graph = graph_buttonbar()
+                .setWidth(width)
+                .setHeight(buttonbar_height)
+                .setOnClick(onClickButtonBar);
+        d3.select(buttonbar_div).call(buttonbar_graph);       
+        div_main.appendChild(buttonbar_div);
+        packery_main.appended(buttonbar_div);   
         //create the div_grid
         div_grid = document.createElement('div');
         div_grid.setAttribute('class', 'grid main-item');
@@ -285,6 +299,51 @@ function controller(data) {
         } 
     };
     
+    var onClickButtonBar = function(name){
+        if(name === 'SWAP_LINES') {
+            for(var key in map_graph) {
+                map_graph[key].swapLines();
+            }
+        } else if(name === 'SORT_BY_CITY'){
+            sortByCity();
+        } else if(name === 'SORT_BY_THEME'){
+            sortByTheme();
+        }           
+    };
+    
+    function sortByCity(){
+        var order = [];
+        for(var key in map_graph){
+            if(map_theme[key] === 'base')
+                order.push(map_graph[key].getElement());
+        }
+        cities.forEach(function(city){
+            for(var key in map_graph){
+                if(key.indexOf(city) > 0)
+                    order.push(map_graph[key].getElement());
+            }
+        });
+        packery_grid.items.forEach(function(o, index){
+            o.element = order[index];
+        }) ;
+        packery_grid.layout();
+    }
+    
+    function sortByTheme(){
+       var order = [];
+        for(var key in map_graph){
+            if(map_theme[key] === 'base')
+                order.push(map_graph[key].getElement());
+                for(var name in map_graph){
+                    if(map_theme[name] === key)
+                        order.push(map_graph[name].getElement());
+                }
+        }
+        packery_grid.items.forEach(function(o, index){
+            o.element = order[index];
+        }) ;
+        packery_grid.layout(); 
+    }
     init();
     
 }

@@ -9,6 +9,7 @@
                 <script src="scripts/read.js"></script>
                 <script src="scripts/linegraph_base.js"></script>
                 <script src="scripts/linegraph_context.js"></script>
+                <script src="scripts/graph_buttonbar.js"></script>
                 <script src="scripts/controller.js"></script>
                 <script src="scripts/trendline.js"></script>
 		<style type="text/css">
@@ -89,6 +90,7 @@
                 data_dictionary['temperature'] = [];
                 data_dictionary['humidity'] = [];
                 data_dictionary['pressure'] = [];
+                var cities = ['leuven', 'antwerpen', 'brussel'];
                 
                 var red = ['#B22D17', '#FF715A', '#FF593E']
                 var blue = ['#303EB2', '#7887FF', '#6273FF']
@@ -126,9 +128,8 @@
                 function onAllDataGathered(){
                     for(var key in data_dictionary){
                         base('black', data_dictionary[key], key, loadedbase);
-                    }
-                    
-                    controller(data_arr);
+                    }                   
+                    controller(data_arr, cities);
                 }
                 
 		</script>
