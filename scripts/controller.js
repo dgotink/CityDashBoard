@@ -25,6 +25,7 @@ function controller(data, cities) {
     var buttonbar_div;
     var buttonbar_graph;
     var buttonbar_height = 50;
+    var button_keys = ['SWAP_LINES', 'SORT_BY_CITY', 'SORT_BY_THEME'];
     //just for the sake of simplicity keep a height - contextheight
     var grid_height = height - context_height - buttonbar_height;
     
@@ -32,7 +33,7 @@ function controller(data, cities) {
     function init(){
         mapData();
         initPackery();
-        createBaseLineGraphs();
+        createBaseGraphs();
     }
     
     //intitializes the packery elements (do at startup)
@@ -51,7 +52,7 @@ function controller(data, cities) {
         //create the buttonbar
         buttonbar_div = document.createElement('div');
         buttonbar_div.setAttribute('class', 'buttonbar main-item');        
-        buttonbar_graph = graph_buttonbar()
+        buttonbar_graph = graph_buttonbar(button_keys)
                 .setWidth(width)
                 .setHeight(buttonbar_height)
                 .setOnClick(onClickButtonBar);
@@ -70,12 +71,12 @@ function controller(data, cities) {
             columnWidth : width,
             itemSelector: '.grid-item'
         });
-        //create the context linegraph div
-        context_div = document.createElement('div')
+        //create the context graph div
+        context_div = document.createElement('div');
         context_div.setAttribute('class', 'contextgraph main-item');
         div_main.appendChild(context_div);
-        //create the context linegraph
-        context_graph = linegraph_context()
+        //create the context graph
+        context_graph = graph_context()
                 .setData(map_data)
                 .setWidth(width)
                 .setHeight(context_height)
@@ -117,8 +118,8 @@ function controller(data, cities) {
         return amount_selected;
     }
 
-    //for every dataset with theme base create a baselinegraph
-    function createBaseLineGraphs(){
+    //for every dataset with theme base create a basegraph
+    function createBaseGraphs(){
         //get the names of the base datasets
         var names = findNamesByTheme('base');
         //foreach name
@@ -133,17 +134,18 @@ function controller(data, cities) {
             var draggie = new Draggabilly(element);
             packery_grid.bindDraggabillyEvents(draggie);
             //make the graph and add it to the map_graph    
-            map_graph[name] = linegraph_base()
+            map_graph[name] = graph_base()
                 .setName(name)
                 .setColor(map_color[name])
                 .setDomain(context_graph.getDomain())
                 .setData(map_data[name])
                 .setWidth(width)
                 .setHeight(1)
-                .setOnClick(onClickBaseLineGraph)
-                .setOnMouseEnter(onMouseEnterLineGraph)
-                .setOnMouseMove(onMouseMoveLineGraph)
-                .setOnMouseLeave(onMouseLeaveLineGraph);
+                .setOnClick(onClickGraph)
+                .setOnMouseEnter(onMouseEnterGraph)
+                .setOnMouseMove(onMouseMoveGraph)
+                .setOnMouseLeave(onMouseLeaveGraph)
+                .setOnButtonClick(onButtonClickGraphBase);
             d3.select(element)
                 .call(map_graph[name]);
             //make the selected boolean and add it to the map_selected    
@@ -154,8 +156,8 @@ function controller(data, cities) {
         packery_main.layout();
     }
     
-    //for every dataset with parem theme create a linegraph
-    function createLineGraphsWithTheme(theme){
+    //for every dataset with parem theme create a graph
+    function createGraphsWithTheme(theme){
         //get the names of the base datasets
         var names = findNamesByTheme(theme);
         //foreach name
@@ -169,18 +171,20 @@ function controller(data, cities) {
             //make the grid item draggable    
             var draggie = new Draggabilly(element);
             packery_grid.bindDraggabillyEvents(draggie);
+            var test = buttonbar_graph.getButtonPressedDictionary()['SWAP_LINES'];
             //make the graph and add it to the map_graph    
-            map_graph[name] = linegraph_base()
+            map_graph[name] = graph()
                 .setName(name)
                 .setColor(map_color[name])
                 .setDomain(context_graph.getDomain())
                 .setData(map_data[name])
                 .setWidth(width)
                 .setHeight(1) 
-                .setOnClick(onClickLineGraph)
-                .setOnMouseEnter(onMouseEnterLineGraph)
-                .setOnMouseMove(onMouseMoveLineGraph)
-                .setOnMouseLeave(onMouseLeaveLineGraph);
+                .setOnClick(onClickGraph)
+                .setOnMouseEnter(onMouseEnterGraph)
+                .setOnMouseMove(onMouseMoveGraph)
+                .setOnMouseLeave(onMouseLeaveGraph)
+                .setTrendFocus(buttonbar_graph.getButtonPressedDictionary()['SWAP_LINES']);
             d3.select(element)
                 .call(map_graph[name]);
             //make the selected boolean and add it to the map_selected    
@@ -204,7 +208,7 @@ function controller(data, cities) {
     }
     
     //remove existing graphs with param theme
-    function removeLineGraphsWithTheme(theme){
+    function removeGraphsWithTheme(theme){
         //find all the div elements in div_grid with class theme and remove them (also from the packery!)
         var elements = div_grid.getElementsByClassName(theme);
         for (var i = elements.length-1; i >=0; i--) {
@@ -249,19 +253,17 @@ function controller(data, cities) {
         packery_grid.layout();       
     }
     
-    //the on click event for the base linegraphs
-    var onClickBaseLineGraph = function(name){
-        if(map_selected[name]){
-            map_selected[name] = false;
-            removeLineGraphsWithTheme(name); 
+    //the on click event for the base graphs
+    var onButtonClickGraphBase = function(name, create){
+        if(!create){
+            removeGraphsWithTheme(name); 
         } else {
-            map_selected[name] = true;
-            createLineGraphsWithTheme(name); 
+            createGraphsWithTheme(name); 
         }
     }; 
     
-    //the on click event for the normal linegraphs
-    var onClickLineGraph = function(name){
+    //the on click event for the normal graphs
+    var onClickGraph = function(name){
          if(map_selected[name]){
             map_selected[name] = false;
         } else {
@@ -270,14 +272,14 @@ function controller(data, cities) {
         updateHeight();
     };
     
-    var onMouseEnterLineGraph = function(){
+    var onMouseEnterGraph = function(){
         for (var key in map_graph) {            
             map_graph[key].showIndicator();
             map_graph[key].showDataInformation();
         } 
     };
     
-    var onMouseMoveLineGraph = function(position){
+    var onMouseMoveGraph = function(position){
         for (var key in map_graph) {            
             map_graph[key].moveIndicator(position);
             map_graph[key].moveDataInformation(position);
@@ -285,14 +287,13 @@ function controller(data, cities) {
         
     };
     
-    var onMouseLeaveLineGraph = function(){
+    var onMouseLeaveGraph = function(){
         for (var key in map_graph) {            
             map_graph[key].hideIndicator();
             map_graph[key].hideDataInformation();
         } 
     };
     
-    //the on brushed event for the context linegraph
     var onBrushedContext = function (domain) {
         for (var key in map_graph) {            
             map_graph[key].setDomain(domain);
@@ -344,6 +345,7 @@ function controller(data, cities) {
         }) ;
         packery_grid.layout(); 
     }
+    
     init();
     
 }

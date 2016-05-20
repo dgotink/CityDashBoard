@@ -1,4 +1,4 @@
-function graph_buttonbar(){
+function graph_buttonbar(keys){
     //variables
     var width;
     var height;
@@ -9,6 +9,13 @@ function graph_buttonbar(){
     
     var button_padding = 5;
     var button_size = height - button_padding - button_padding;
+    
+    var button_keys = keys;
+    var button_pressed = {};
+    
+    button_keys.forEach(function(key){
+        button_pressed[key] = false;
+    });
     
     var on_click;
 
@@ -21,7 +28,6 @@ function graph_buttonbar(){
             //buttongroup var
             var button_group;
             var button_dictionary = {};
-            var button_keys = ['SWAP_LINES', 'SORT_BY_CITY', 'SORT_BY_THEME'];
             
             function initSvg(){
                 //make the svg
@@ -70,7 +76,12 @@ function graph_buttonbar(){
             }
             
             function onClick(){
-                on_click(this.id);
+                var key = this.id;
+                if(button_pressed[key])
+                    button_pressed[key] = false;
+                else
+                    button_pressed[key] = true;
+                on_click(key);
             }
             
             initSvg();
@@ -105,5 +116,10 @@ function graph_buttonbar(){
         on_click = value;
         return chart;
     };
+    
+    chart.getButtonPressedDictionary = function(){
+        return button_pressed;
+    };
+    
     return chart;    
 }
