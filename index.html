@@ -97,17 +97,17 @@
                 var blue = ['#303EB2', '#7887FF', '#6273FF']
                 var green = ['#1AB21A', '#5DFF5E', '#41FF42']
                 
-               filter(green[0], 'temperature', 'created_at.$date', 'temperature', 'weather_Brussel.json', 'temperature_brussel', loaded);
-               filter(red[0], 'temperature', 'created_at.$date', 'temperature', 'weather_Leuven.json', 'temperature_leuven', loaded);
-               filter(blue[0], 'temperature', 'created_at.$date', 'temperature', 'weather_Antwerpen.json', 'temperature_antwerpen', loaded);
+               filter(green[0], 'temperature', 'created_at.$date', 'temperature', 'Brussel', 'weather_Brussel.json', 'temperature_brussel', loaded);
+               filter(red[0], 'temperature', 'created_at.$date', 'temperature', 'Leuven', 'weather_Leuven.json', 'temperature_leuven', loaded);
+               filter(blue[0], 'temperature', 'created_at.$date', 'temperature', 'Antwerpen', 'weather_Antwerpen.json', 'temperature_antwerpen', loaded);
                
-               filter(green[1], 'humidity', 'created_at.$date', 'humidity', 'weather_Brussel.json', 'humidity_brussel', loaded);
-               filter(red[1], 'humidity', 'created_at.$date', 'humidity', 'weather_Leuven.json', 'humidity_leuven', loaded);
-               filter(blue[1], 'humidity', 'created_at.$date', 'humidity', 'weather_Antwerpen.json', 'humidity_antwerpen', loaded);
+               filter(green[1], 'humidity', 'created_at.$date', 'humidity', 'Brussel', 'weather_Brussel.json', 'humidity_brussel', loaded);
+               filter(red[1], 'humidity', 'created_at.$date', 'humidity', 'Leuven', 'weather_Leuven.json', 'humidity_leuven', loaded);
+               filter(blue[1], 'humidity', 'created_at.$date', 'humidity', 'Antwerpen', 'weather_Antwerpen.json', 'humidity_antwerpen', loaded);
                
-               filter(green[2], 'pressure', 'created_at.$date', 'pressure', 'weather_Brussel.json', 'pressure_brussel', loaded);
-               filter(red[2], 'pressure', 'created_at.$date', 'pressure', 'weather_Leuven.json', 'pressure_leuven', loaded);
-               filter(blue[2], 'pressure', 'created_at.$date', 'pressure', 'weather_Antwerpen.json', 'pressure_antwerpen', loaded);
+               filter(green[2], 'pressure', 'created_at.$date', 'pressure', 'Brussel', 'weather_Brussel.json', 'pressure_brussel', loaded);
+               filter(red[2], 'pressure', 'created_at.$date', 'pressure', 'Leuven', 'weather_Leuven.json', 'pressure_leuven', loaded);
+               filter(blue[2], 'pressure', 'created_at.$date', 'pressure', 'Antwerpen', 'weather_Antwerpen.json', 'pressure_antwerpen', loaded);
                
                /*groupByX(green[2], 'bike-spots', 'created_at.$date', 'freespots', 'bikes_Brussel.json', 'bike-spots_brussel', loaded);
                groupByX(blue[2], 'bike-spots', 'created_at.$date', 'freespots', 'bikes_Antwerpen.json', 'bike-spots_antwerpen', loaded);
@@ -115,6 +115,7 @@
 
                 function loaded(datum){
                     data_dictionary[datum['theme']].push(datum);
+                    data_arr.push(datum);
                     count++;
                     if(count === number_of_datas)
                         onAllDataGathered();                     
@@ -127,10 +128,10 @@
                 }
                 
                 function onAllDataGathered(){
-                    for(var key in data_dictionary){
+                    /*for(var key in data_dictionary){
                         base('black', data_dictionary[key], key, loadedbase);
-                    }                   
-                    controller(data_arr, cities);
+                    }  */  
+                    controller(data_arr);
                 }
                 
 		</script>

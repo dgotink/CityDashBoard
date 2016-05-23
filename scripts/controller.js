@@ -1,15 +1,20 @@
-function controller(data, cities) {   
+function controller(data) {   
     //data map vars and length
     var map_color = {};
     var map_theme = {};
+    var map_city = {};
     var map_data = {};
     var map_graph = {};
     var map_selected = {};
     //packery and their divs
     var packery_main;
     var packery_grid;
+    var packery_modules = {};
+    var packery_active = {};
     var div_main;
-    var div_grid;   
+    var div_grid;  
+    var div_modules = {};
+    var div_active = {};
     //height and width var
     var width = window.innerWidth;
     var height = window.innerHeight;
@@ -33,7 +38,8 @@ function controller(data, cities) {
     function init(){
         mapData();
         initPackery();
-        createBaseGraphs();
+        createPackeryModules();
+        createGraphs();
     }
     
     //intitializes the packery elements (do at startup)
@@ -87,6 +93,37 @@ function controller(data, cities) {
         packery_main.layout();
     }
     
+    function createPackeryModules(){
+        //for every theme/attribute
+        for(var key in map_theme){
+            var theme = map_theme[key];
+            var div = document.createElement('div');
+            div.setAttribute('class', 'grid-item ' + theme);
+            div_modules[theme] = div;
+            var pack = new Packery(div, {
+                //options
+                gutter: 0,
+                columnWidth : width,
+                itemSelector: '.' + theme + '-item'
+            });
+            packery_modules[theme] = pack;
+        }
+        //for every city
+        for(var key in map_city){
+            var city = map_city[key];
+            var div = document.createElement('div');
+            div.setAttribute('class', 'grid-item ' + city);
+            div_modules[city] = div;
+            var pack = new Packery(div, {
+                //options
+                gutter: 0,
+                columnWidth : width,
+                itemSelector: '.' + city + '-item'
+            });
+            packery_modules[city] = pack;
+        }
+    }
+    
     //maps the data in different dictionaries/maps (do at startup or data changes)
     function mapData(){
         //for every dataset in the data
@@ -94,6 +131,7 @@ function controller(data, cities) {
         data.forEach(function(dataset){
             map_color[dataset.name] = dataset.color;
             map_theme[dataset.name] = dataset.theme;
+            map_city[dataset.name] = dataset.city;
             map_data[dataset.name] = dataset.data;
         });
     }
@@ -117,67 +155,27 @@ function controller(data, cities) {
         }
         return amount_selected;
     }
-
-    //for every dataset with theme base create a basegraph
-    function createBaseGraphs(){
-        //get the names of the base datasets
-        var names = findNamesByTheme('base');
-        //foreach name
-        names.forEach(function(name){
-            //create a div and append it to div_grid and packery_grid
-            var element = document.createElement('div');
-            element.setAttribute('id', name);
-            element.setAttribute('class', 'grid-item base-' + name);
-            div_grid.appendChild(element);
-            packery_grid.appended(element);
-            //make the grid item draggable    
-            var draggie = new Draggabilly(element);
-            packery_grid.bindDraggabillyEvents(draggie);
-            //make the graph and add it to the map_graph    
-            map_graph[name] = graph_base()
-                .setName(name)
-                .setColor(map_color[name])
-                .setDomain(context_graph.getDomain())
-                .setData(map_data[name])
-                .setWidth(width)
-                .setHeight(1)
-                .setOnClick(onClickGraph)
-                .setOnMouseEnter(onMouseEnterGraph)
-                .setOnMouseMove(onMouseMoveGraph)
-                .setOnMouseLeave(onMouseLeaveGraph)
-                .setOnButtonClick(onButtonClickGraphBase);
-            d3.select(element)
-                .call(map_graph[name]);
-            //make the selected boolean and add it to the map_selected    
-            map_selected[name] = false;           
-        });
-        updateHeight();
-        //call for another packery_main layout as the size has changed
-        packery_main.layout();
-    }
     
-    //for every dataset with parem theme create a graph
-    function createGraphsWithTheme(theme){
-        //get the names of the base datasets
-        var names = findNamesByTheme(theme);
-        //foreach name
-        names.forEach(function(name){
+    //creates all the graphs and adds them to the modules
+    function createGraphs(){
+        //foreach dataset
+        for(var key in map_data){
             //create a div and append it to div_grid and packery_grid
             var element = document.createElement('div');
             element.setAttribute('id', name);
-            element.setAttribute('class', 'grid-item ' + theme);
+            element.setAttribute('class', map_theme[key] + '-item ' + map_city[key] + '-item grid-item');
             div_grid.appendChild(element);
             packery_grid.appended(element);
             //make the grid item draggable    
             var draggie = new Draggabilly(element);
             packery_grid.bindDraggabillyEvents(draggie);
-            var test = buttonbar_graph.getButtonPressedDictionary()['SWAP_LINES'];
             //make the graph and add it to the map_graph    
-            map_graph[name] = graph()
-                .setName(name)
-                .setColor(map_color[name])
+            map_graph[key] = graph()
+                .setName(key)
+                .setLabel(map_city[key] + ' ' + map_theme[key])
+                .setColor(map_color[key])
                 .setDomain(context_graph.getDomain())
-                .setData(map_data[name])
+                .setData(map_data[key])
                 .setWidth(width)
                 .setHeight(1) 
                 .setOnClick(onClickGraph)
@@ -186,41 +184,12 @@ function controller(data, cities) {
                 .setOnMouseLeave(onMouseLeaveGraph)
                 .setTrendFocus(buttonbar_graph.getButtonPressedDictionary()['SWAP_LINES']);
             d3.select(element)
-                .call(map_graph[name]);
+                .call(map_graph[key]);
             //make the selected boolean and add it to the map_selected    
-            map_selected[name] = false;           
-        });
-        //set the item order so the linegraphs appear under the acording base graph
-        var items = packery_grid.items;
-        var index = -1;
-        for(var i = 0; i < items.length; i++){
-            var element = items[i].element;
-            if (element.classList.contains('base-' + theme))
-                index = i;  
-            if (element.classList.contains(theme)){
-                if(index >= 0){
-                    var item = items.splice(i, 1);
-                    items.splice(index+1, 0, item[0]);
-                }
-            }           
+            map_selected[key] = false;           
         }
         updateHeight();
-    }
-    
-    //remove existing graphs with param theme
-    function removeGraphsWithTheme(theme){
-        //find all the div elements in div_grid with class theme and remove them (also from the packery!)
-        var elements = div_grid.getElementsByClassName(theme);
-        for (var i = elements.length-1; i >=0; i--) {
-            packery_grid.remove(elements[i]);
-            div_grid.removeChild(elements[i]);
-        }
-        //remove the graphs from the map_graphs
-        elements = findNamesByTheme(theme);
-        elements.forEach(function(element){
-            delete map_graph[element];
-        }); 
-        updateHeight();
+        packery_main.layout();
     }
     
     //updates the width for every graph in map_graph
@@ -252,16 +221,7 @@ function controller(data, cities) {
         //re-layout the packery module (since the sizes of the items have changed)
         packery_grid.layout();       
     }
-    
-    //the on click event for the base graphs
-    var onButtonClickGraphBase = function(name, create){
-        if(!create){
-            removeGraphsWithTheme(name); 
-        } else {
-            createGraphsWithTheme(name); 
-        }
-    }; 
-    
+
     //the on click event for the normal graphs
     var onClickGraph = function(name){
          if(map_selected[name]){
@@ -269,6 +229,7 @@ function controller(data, cities) {
         } else {
             map_selected[name] = true;
         }
+        map_graph[name].setSelected(map_selected[name]);
         updateHeight();
     };
     
@@ -313,20 +274,25 @@ function controller(data, cities) {
     };
     
     function sortByCity(){
-        var order = [];
-        for(var key in map_graph){
-            if(map_theme[key] === 'base')
-                order.push(map_graph[key].getElement());
+        var cities = [];
+        var packs = [];
+        for(var key in map_city){
+            if(cities.indexOf(map_city[key]) < 0)
+                cities.push(map_city[key]);
         }
         cities.forEach(function(city){
             for(var key in map_graph){
-                if(key.indexOf(city) > 0)
-                    order.push(map_graph[key].getElement());
+                if(map_city[key] === city){
+                    packery_modules[city].appended(map_graph[key].getElement());
+                    div_modules[city].appendChild(map_graph[key].getElement());
+                    packery_grid.remove(map_graph[key].getElement());
+                }  
             }
+            div_grid.appendChild(div_modules[city]);
+            packery_grid.appended( packery_modules[city]);
+            packery_modules[city].layout();
         });
-        packery_grid.items.forEach(function(o, index){
-            o.element = order[index];
-        }) ;
+
         packery_grid.layout();
     }
     

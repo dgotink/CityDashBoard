@@ -1,16 +1,16 @@
-var filter = function(color, theme, xName, yName, input, name, callback){
+var filter = function(color, theme, xName, yName, city, input, name, callback){
     var method = function(data){
         var dataArr = data.data;
         dataArr = dataArr.map(function (i) {
             return { 'x': pick(xName, i), 'y': pick(yName, i) };
         });
-        var out = { 'name': name, 'color': color, 'theme': theme, 'data': dataArr };
+        var out = { 'name': name, 'color': color, 'theme': theme, 'city': city, 'data': dataArr };
         callback(out);
     };
     read(input, method);
 };
 
-var groupByX = function (color, theme, xName, yName, input, name, callback){
+var groupByX = function (color, theme, xName, yName, city, input, name, callback){
     var method = function(data){
         var dic = {};
         var dataArr = data.data;
@@ -30,7 +30,7 @@ var groupByX = function (color, theme, xName, yName, input, name, callback){
                     dic[x] = y;
             }     
         });
-        var out = { 'name': name, 'color': color, 'theme': theme, 'data': getArr(dic) };
+        var out = { 'name': name, 'color': color, 'theme': theme, 'city': city, 'data': getArr(dic) };
         callback(out);
     };   
     read(input, method);

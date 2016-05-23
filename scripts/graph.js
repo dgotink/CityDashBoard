@@ -1,6 +1,7 @@
 function graph(){
     //variables
     var name;
+    var label;
     var color;
     var domain;
     var data;
@@ -9,6 +10,7 @@ function graph(){
     var height;
     var padding = {'top': 0, 'right': 0, 'bottom': 0, 'left': 0};
     //update function vars
+    var updateLabel;
     var updateData;
     var updateWidth;
     var updateHeight;
@@ -29,8 +31,9 @@ function graph(){
     //command vars
     var swapLinesCommand; 
     var trendFocus = false;
-    //constant value vars
-    var MINIMUM_SIZE_NEEDED_FOR_LINE = 50;
+    //selected var
+    var selected = false;
+    var updateSelected;
 
     //the function that makes the linegraph
     function chart(selection){
@@ -51,9 +54,13 @@ function graph(){
             //svg and element var
             var svg;
             element = this;
-            var clip_linepath;           
+            var clip_linepath; 
+            //draw vars
+            var draw_group;
             //label var
-            var label;
+            var label_group;
+            var label_background;
+            var label_text;
             //mouse information vars
             var mouse_indicator;
             var indicator_box;
@@ -116,29 +123,50 @@ function graph(){
             
             //-------LABEL METHODS--------
             function initLabel(){
-                var margin = 10;
-                label = svg.append('text')
-                    .attr('class', 'label')
-                    .style('font-family', 'inherit')
-                    .style('fill', color)
-                    .text(name)
-                    .attr('x', (width - padding.right) + margin)
-                    .attr('y', height);
+                label_group = svg.append('g')
+                    .attr('class', 'labelgroup');
+                
+                label_background = label_group.append('rect')
+                    .attr('class', 'labelbackground')
+                    .style('fill', 'white')
+                    .style('opacity', '1');
+                
+                label_text = label_group.append('text')
+                    .attr('class', 'labeltext')
+                    .text(label)
+                    .style('font-size', 16)
+                    .style('font-family', 'Helvetica Neue,Helvetica,Arial,sans-serif;')
+                    .style('fill', 'color');
             }
             
-            function updateLabel() {  
-                if(height >= MINIMUM_SIZE_NEEDED_FOR_LINE){
+            var updateLabel = function() { 
+                var fontsize = 16;
+                if(selected){
                     var value = domain[1];
                     var index = bisect(data, value);
-                    label
-                        .transition().duration(800)
+                    label_text
+                        .text(label)
+                        .attr('x', width - padding.right + 10)
                         .attr('y', scale_y(data[index].y));
+                                    
+                    label_background.style('visibility', 'hidden');
                 } else {
-                    label
-                        .transition().duration(800)
-                        .attr('y', height/2);
+                    label_text
+                        .text(label.toUpperCase())
+                        .attr('x', padding.left + 5)
+                        .attr('y', padding.top + 5 + fontsize/2)
+                        .style('font-size', fontsize);
+                        
+                    var bbox = label_text.node().getBBox();
+                    
+                    label_background
+                            .attr('x', padding.left)
+                            .attr('y', padding.top)
+                            .attr('width', bbox.width + 10)
+                            .attr('height', bbox.height)
+                            .style('visibility', 'visible');
                 }             
-            }
+            };
             
             //-------INDICATOR METHODS--------
             function initIndicator(){
@@ -225,19 +253,21 @@ function graph(){
             
              //-------DRAW METHODS--------
             function draw(){
+                draw_group = svg.append('g')
+                    .attr('class', 'drawgroup');
                 drawLine();
-                if(height < MINIMUM_SIZE_NEEDED_FOR_LINE){
-                    svg.select('.line').style('visibility', 'hidden');
+                if(!selected){
+                    draw_group.select('.line').style('visibility', 'hidden');
                     drawTiles();  
                 }
             }
             
             function redraw(){
-                if(height < MINIMUM_SIZE_NEEDED_FOR_LINE){
-                    svg.select('.line').style('visibility', 'hidden');
+                if(!selected){
+                    draw_group.select('g.line').style('visibility', 'hidden');
                     drawTiles();     
                 } else {
-                    svg.select('.line').style('visibility', 'visible');
+                    draw_group.select('g.line').style('visibility', 'visible');
                     removeTiles(); 
                     redrawLine();
                 }
@@ -245,7 +275,7 @@ function graph(){
             
             //-------LINE METHODS--------
             function drawLine() {
-                var container = svg.append('g')
+                var container = draw_group.append('g')
                         .style('stroke', color)
                         .attr('pointer-events', 'none')
                         .attr('class', 'line');
@@ -258,7 +288,7 @@ function graph(){
             }
             
             function redrawLine(){
-                var container = svg.select('g.line');
+                var container = draw_group.select('g.line');
                 
                 container.selectAll('path')
                     //.transition().duration(800)
@@ -313,7 +343,7 @@ function graph(){
                 var averages = getAveragesArr(amount, steps_indices);
                 removeTiles();
                 
-                var container = svg.append('g')
+                var container = draw_group.append('g')
                         .attr('pointer-events', 'none')
                         .attr('class', 'tiles');
                
@@ -345,7 +375,7 @@ function graph(){
             }
             
             function removeTiles(){
-                svg.select('.tiles').remove();
+                draw_group.select('.tiles').remove();
             }
             
             //-------DATA INFORMATION METHODS--------
@@ -376,7 +406,7 @@ function graph(){
             }
             
             showDataInformation = function(){
-                if(height >= MINIMUM_SIZE_NEEDED_FOR_LINE && trendFocus !== true)
+                if(selected && trendFocus !== true)
                     data_information_group
                         .style('visibility', 'visible');
             };
@@ -548,12 +578,11 @@ function graph(){
                 redraw();
                 updateLabel();
                 updateIndicator();
-                updateTrendline();
-                checkMinimunHeightRequirements();
+                updateTrendline();              
             };
             
-            function checkMinimunHeightRequirements(){
-                if(height < MINIMUM_SIZE_NEEDED_FOR_LINE){
+            updateSelected = function(){
+                if(!selected){
                     svg.select('g.trendlinegroup').style('visibility', 'hidden');
                     svg.select('.axis').style('visibility', 'hidden');
                     hideDataInformation();
@@ -562,7 +591,9 @@ function graph(){
                     svg.select('.axis').style('visibility', 'visible');
                     showDataInformation();
                 }
-            }
+                updateLabel();
+                redraw();
+            };
 
             function init(){
                 initSvg();
@@ -578,8 +609,8 @@ function graph(){
                     trendFocus = false;
                     swapLinesCommand();
                 }
-            }
-            
+                updateSelected();
+            }          
             init();
           
         });
@@ -587,6 +618,12 @@ function graph(){
     
     chart.setName = function(value){
         name = value;
+        return chart;
+    };
+    
+    chart.setLabel = function(value){
+        label = value;
+        if (typeof updateData === 'function') updateLabel();
         return chart;
     };
     
@@ -688,6 +725,12 @@ function graph(){
     
     chart.setTrendFocus = function(value){
         trendFocus = value;
+        return chart;
+    };
+    
+    chart.setSelected = function(value){
+        selected = value;
+        updateSelected();
         return chart;
     };
     
