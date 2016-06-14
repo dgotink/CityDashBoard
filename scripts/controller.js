@@ -42,7 +42,7 @@ function controller(data) {
         initPackeryMain();
         initButtonBar();
         initPackeryGrid();
-        packeries();
+        initPackeryGroups();
         initContextGraph();
         createGraphs();
     }
@@ -101,29 +101,37 @@ function controller(data) {
             //options
             gutter: 0,
             itemSelector: '.grid-item'
+
         });
     }
     
-    function packeries(){
+    function initPackeryGroups(){
         city_keys.forEach(function(key){
             //create the packery groups together with the div groups
             var gridItem = document.createElement('div');
             gridItem.setAttribute('class', 'grid-item');
             
-            var graphContainer = document.createElement('div');
-            graphContainer.setAttribute('class', 'graph-container');
+            var para = document.createElement('p');
+            var node = document.createTextNode(key);
+            para.style.fontSize = '16px';
+            para.style.fontFamily = 'Helvetica';
+            para.appendChild(node);
+
+            gridItem.appendChild(para);
+            gridItem.style.backgroundColor = 'red';
+            //var graphContainer = document.createElement('div');
+            //graphContainer.setAttribute('class', 'graph-container');
             
-            gridItem.appendChild(graphContainer);
+            //gridItem.appendChild(graphContainer);
             div_grid.appendChild(gridItem);
-            
-            div_group[key] = graphContainer;
-            
             packery_grid.appended(gridItem);
-            packery_group[key] = new Packery(graphContainer, {
+            
+            packery_group[key] = new Packery(gridItem, {
                 //options
                 gutter: 0,
                 itemSelector: '.' + key + '-item'
             });
+            div_group[key] = gridItem;
             map_active[key] = true;
         }); 
     }
@@ -248,13 +256,15 @@ function controller(data) {
 
     //the on click event for the normal graphs
     var onClickGraph = function(name){
-         if(map_selected[name]){
-            map_selected[name] = false;
-        } else {
-            map_selected[name] = true;
+        if(document.querySelector('.packery-drop-placeholder') === null){
+            if(map_selected[name]){
+                map_selected[name] = false;
+            } else {
+                map_selected[name] = true;
+            }
+            map_graph[name].setSelected(map_selected[name]);
+            updateHeight();
         }
-        map_graph[name].setSelected(map_selected[name]);
-        updateHeight();
     };
     
     var onMouseEnterGraph = function(){
