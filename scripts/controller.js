@@ -6,15 +6,14 @@ function controller(data) {
     var map_data = {};
     var map_graph = {};
     var map_selected = {};
+    var map_active = {};
     //packery and their divs
     var packery_main;
     var packery_grid;
-    var packery_modules = {};
-    var packery_active = {};
+    var packery_group = {};
     var div_main;
     var div_grid;  
-    var div_modules = {};
-    var div_active = {};
+    var div_group = {};
     //height and width var
     var width = window.innerWidth;
     var height = window.innerHeight;
@@ -30,53 +29,39 @@ function controller(data) {
     var buttonbar_div;
     var buttonbar_graph;
     var buttonbar_height = 50;
-    var button_keys = ['SWAP_LINES', 'SORT_BY_CITY', 'SORT_BY_THEME'];
-    //just for the sake of simplicity keep a height - contextheight
+    //key vars
+    var city_keys = ['Antwerpen', 'Brussel', 'Leuven'];
+    var theme_keys = ['TEMPERATURE', 'HUMIDITY', 'PRESSURE'];
+    var button_keys = ['SWAP LINES', 'SORT BY CITY', 'SORT BY THEME'];
+    //just for the sake of ease keep a height - contextheight
     var grid_height = height - context_height - buttonbar_height;
     
     //init
     function init(){
         mapData();
-        initPackery();
-        createPackeryModules();
+        initPackeryMain();
+        initButtonBar();
+        initPackeryGrid();
+        packeries();
+        initContextGraph();
         createGraphs();
     }
     
-    //intitializes the packery elements (do at startup)
-    function initPackery(){
-        //create the div_main
-        div_main = document.createElement('div');
-        div_main.setAttribute('class', 'main');
-        document.body.appendChild(div_main);
-        //create the packery_main
-        packery_main = new Packery(div_main, {
-            //options
-            gutter: 0,
-            columnWidth : width,
-            itemSelector: '.main-item'
-        });
-        //create the buttonbar
+    function initButtonBar(){
+        //create the buttonbar div
         buttonbar_div = document.createElement('div');
-        buttonbar_div.setAttribute('class', 'buttonbar main-item');        
+        buttonbar_div.setAttribute('class', 'buttonbar main-item'); 
+        div_main.appendChild(buttonbar_div);
+        //create the buttonbar graph
         buttonbar_graph = graph_buttonbar(button_keys)
                 .setWidth(width)
                 .setHeight(buttonbar_height)
                 .setOnClick(onClickButtonBar);
-        d3.select(buttonbar_div).call(buttonbar_graph);       
-        div_main.appendChild(buttonbar_div);
-        packery_main.appended(buttonbar_div);   
-        //create the div_grid
-        div_grid = document.createElement('div');
-        div_grid.setAttribute('class', 'grid main-item');
-        div_main.appendChild(div_grid);
-        packery_main.appended(div_grid);
-        //create the packery_grid
-        packery_grid = new Packery(div_grid, {
-            //options
-            gutter: 0,
-            columnWidth : width,
-            itemSelector: '.grid-item'
-        });
+        d3.select(buttonbar_div).call(buttonbar_graph);
+        packery_main.appended(buttonbar_div);    
+    }
+    
+    function initContextGraph(){
         //create the context graph div
         context_div = document.createElement('div');
         context_div.setAttribute('class', 'contextgraph main-item');
@@ -88,42 +73,61 @@ function controller(data) {
                 .setHeight(context_height)
                 .setOnChildBrushed(onBrushedContext);                
         d3.select(context_div).call(context_graph);
-        //append the context div to the packery_main and call for a layout
         packery_main.appended(context_div);
-        packery_main.layout();
     }
     
-    function createPackeryModules(){
-        //for every theme/attribute
-        for(var key in map_theme){
-            var theme = map_theme[key];
-            var div = document.createElement('div');
-            div.setAttribute('class', 'grid-item ' + theme);
-            div_modules[theme] = div;
-            var pack = new Packery(div, {
-                //options
-                gutter: 0,
-                columnWidth : width,
-                itemSelector: '.' + theme + '-item'
-            });
-            packery_modules[theme] = pack;
-        }
-        //for every city
-        for(var key in map_city){
-            var city = map_city[key];
-            var div = document.createElement('div');
-            div.setAttribute('class', 'grid-item ' + city);
-            div_modules[city] = div;
-            var pack = new Packery(div, {
-                //options
-                gutter: 0,
-                columnWidth : width,
-                itemSelector: '.' + city + '-item'
-            });
-            packery_modules[city] = pack;
-        }
+    //intitializes the main packery (this one is used to layout the buttonbar, grid, and context
+    function initPackeryMain(){
+        //create the div_main
+        div_main = document.createElement('div');
+        div_main.setAttribute('class', 'main');
+        document.body.appendChild(div_main);
+        //create the packery_main
+        packery_main = new Packery(div_main, {
+            //options
+            gutter: 0,
+            itemSelector: '.main-item'
+        });  
     }
     
+    function initPackeryGrid(){
+        //create the div_grid
+        div_grid = document.createElement('div');
+        div_grid.setAttribute('class', 'grid main-item');
+        div_main.appendChild(div_grid);
+        packery_main.appended(div_grid);
+        //create the packery_grid
+        packery_grid = new Packery(div_grid, {
+            //options
+            gutter: 0,
+            itemSelector: '.grid-item'
+        });
+    }
+    
+    function packeries(){
+        city_keys.forEach(function(key){
+            //create the packery groups together with the div groups
+            var gridItem = document.createElement('div');
+            gridItem.setAttribute('class', 'grid-item');
+            
+            var graphContainer = document.createElement('div');
+            graphContainer.setAttribute('class', 'graph-container');
+            
+            gridItem.appendChild(graphContainer);
+            div_grid.appendChild(gridItem);
+            
+            div_group[key] = graphContainer;
+            
+            packery_grid.appended(gridItem);
+            packery_group[key] = new Packery(graphContainer, {
+                //options
+                gutter: 0,
+                itemSelector: '.' + key + '-item'
+            });
+            map_active[key] = true;
+        }); 
+    }
+
     //maps the data in different dictionaries/maps (do at startup or data changes)
     function mapData(){
         //for every dataset in the data
@@ -137,13 +141,22 @@ function controller(data) {
     }
     
     //returns list of names according to theme
-    function findNamesByTheme(theme){
-        var output = [];
+    function findThemes(){
+        var themes = [];
         for(var key in map_theme){
-            if(map_theme[key] === theme)
-                output.push(key);
+            if(themes.indexOf(map_theme[key]) < 0)
+                themes.push(map_theme[key]);
         }
-        return output;
+        return themes;
+    }
+    
+    function findCities(){
+        var cities = [];
+        for(var key in map_city){
+            if(cities.indexOf(map_city[key]) < 0)
+                cities.push(map_city[key]);
+        }
+        return cities;
     }
     
     //returns integer of amount of selected graphs
@@ -160,15 +173,16 @@ function controller(data) {
     function createGraphs(){
         //foreach dataset
         for(var key in map_data){
+            var city = map_city[key];
             //create a div and append it to div_grid and packery_grid
             var element = document.createElement('div');
-            element.setAttribute('id', name);
-            element.setAttribute('class', map_theme[key] + '-item ' + map_city[key] + '-item grid-item');
-            div_grid.appendChild(element);
-            packery_grid.appended(element);
+            element.setAttribute('id', key);
+            element.setAttribute('class', city + '-item');
+            div_group[city].appendChild(element);
+            packery_group[city].appended(element);
             //make the grid item draggable    
             var draggie = new Draggabilly(element);
-            packery_grid.bindDraggabillyEvents(draggie);
+            packery_group[city].bindDraggabillyEvents(draggie);
             //make the graph and add it to the map_graph    
             map_graph[key] = graph()
                 .setName(key)
@@ -182,13 +196,15 @@ function controller(data) {
                 .setOnMouseEnter(onMouseEnterGraph)
                 .setOnMouseMove(onMouseMoveGraph)
                 .setOnMouseLeave(onMouseLeaveGraph)
-                .setTrendFocus(buttonbar_graph.getButtonPressedDictionary()['SWAP_LINES']);
+                .setTrendFocus(buttonbar_graph.getButtonPressedDictionary()['SWAP LINES']);
             d3.select(element)
                 .call(map_graph[key]);
             //make the selected boolean and add it to the map_selected    
             map_selected[key] = false;           
         }
         updateHeight();
+        packery_group[city].layout();
+        packery_grid.layout();
         packery_main.layout();
     }
     
@@ -217,10 +233,18 @@ function controller(data) {
                 new_height = total_unselected_height/(Object.keys(map_graph).length - amount_selected);
             //give the graph the command to update his height
             map_graph[key].setHeight(new_height);
+            //call for a relayout
+            layout();  
         } 
-        //re-layout the packery module (since the sizes of the items have changed)
-        packery_grid.layout();       
     }
+    
+    //calls for a layout on all active packery instances
+    function layout(){
+        for(var key in packery_group){
+            if(map_active[key])
+                packery_group[key].layout();
+        }
+    };
 
     //the on click event for the normal graphs
     var onClickGraph = function(name){
@@ -245,7 +269,6 @@ function controller(data) {
             map_graph[key].moveIndicator(position);
             map_graph[key].moveDataInformation(position);
         } 
-        
     };
     
     var onMouseLeaveGraph = function(){
@@ -262,54 +285,47 @@ function controller(data) {
     };
     
     var onClickButtonBar = function(name){
-        if(name === 'SWAP_LINES') {
+        if(name === 'SWAP LINES') {
             for(var key in map_graph) {
                 map_graph[key].swapLines();
             }
-        } else if(name === 'SORT_BY_CITY'){
+        } else if(name === 'SORT BY CITY'){
             sortByCity();
-        } else if(name === 'SORT_BY_THEME'){
+        } else if(name === 'SORT BY THEME'){
             sortByTheme();
         }           
     };
     
     function sortByCity(){
-        var cities = [];
-        var packs = [];
-        for(var key in map_city){
-            if(cities.indexOf(map_city[key]) < 0)
-                cities.push(map_city[key]);
-        }
+        var cities = findCities();
+        var order = [];
         cities.forEach(function(city){
             for(var key in map_graph){
                 if(map_city[key] === city){
-                    packery_modules[city].appended(map_graph[key].getElement());
-                    div_modules[city].appendChild(map_graph[key].getElement());
-                    packery_grid.remove(map_graph[key].getElement());
+                    order.push(map_graph[key].getElement());
                 }  
             }
-            div_grid.appendChild(div_modules[city]);
-            packery_grid.appended( packery_modules[city]);
-            packery_modules[city].layout();
         });
-
+        packery_grid.items.forEach(function(o, index){
+            o.element = order[index];
+        }) ;
         packery_grid.layout();
     }
     
     function sortByTheme(){
-       var order = [];
-        for(var key in map_graph){
-            if(map_theme[key] === 'base')
-                order.push(map_graph[key].getElement());
-                for(var name in map_graph){
-                    if(map_theme[name] === key)
-                        order.push(map_graph[name].getElement());
-                }
-        }
+        var themes = findThemes();
+        var order = [];
+        themes.forEach(function(theme){
+            for(var key in map_graph){
+                if(map_theme[key] === theme){
+                    order.push(map_graph[key].getElement());
+                }  
+            }
+        });
         packery_grid.items.forEach(function(o, index){
             o.element = order[index];
         }) ;
-        packery_grid.layout(); 
+        packery_grid.layout();
     }
     
     init();

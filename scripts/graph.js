@@ -50,7 +50,8 @@ function graph(){
             var axis_y;
             //line function vars
             var line_animation;
-            var line;          
+            var line;   
+            var trendline;
             //svg and element var
             var svg;
             element = this;
@@ -66,7 +67,8 @@ function graph(){
             var indicator_box;
             var data_information_group;
             //timeformat var
-            var timeFormat = d3.time.format('%Y-%m-%dT%H:%M:%S.%LZ');
+            var timeFormat = d3.time.format('%Y-%m-%dT%H:%M:%S.%L%Z');
+            var timeFormatISO = d3.time.format('%Y-%m-%dT%H:%M:%S.%LZ');
             //bisect var
             var bisect = d3.bisector(function(d) { return timeFormat.parse(d.x); }).left;
             
@@ -143,6 +145,8 @@ function graph(){
                 var fontsize = 16;
                 if(selected){
                     var value = domain[1];
+                    if(value > timeFormat.parse(data[data.length-1].x))
+                        value = timeFormat.parse(data[data.length-1].x);
                     var index = bisect(data, value);
                     label_text
                         .text(label)
@@ -228,7 +232,11 @@ function graph(){
             
                 line = d3.svg.line().interpolate('linear')
                     .x(function(d){ return scale_x(timeFormat.parse(d.x)); })
-                    .y(function(d){ return scale_y(d.y); });  
+                    .y(function(d){ return scale_y(d.y); }); 
+            
+                trendline = d3.svg.line().interpolate('linear')
+                    .x(function(d){ return scale_x(timeFormatISO.parse(d.x)); })
+                    .y(function(d){ return scale_y(d.y); });
             }
             
             //-------AXIS METHODS--------
@@ -347,7 +355,7 @@ function graph(){
                         .attr('pointer-events', 'none')
                         .attr('class', 'tiles');
                
-                for(var i = 0; i <= amount; i++){
+                for(var i = 0; i < averages.length; i++){
                     //find the middle between 2 points (tiles are drawn from the middle of 2 points to another middle)
                     var current = scale_x(steps_date[i]);
                     var prev = steps_date[i-1];
@@ -363,6 +371,11 @@ function graph(){
                     var x2 = (current + next)/2;
                     
                     var tmp_width = x2 - x1;
+                    
+                    var color = scale_color(averages[i]);
+                    if(color === '#NaNNaNNaN')
+                        color = 'white';
+                    
 
                     container.append('rect')
                             .attr('class', 'tile')
@@ -370,7 +383,7 @@ function graph(){
                             .attr('width', tmp_width)
                             .attr('y', padding.top)
                             .attr('height', height - padding.bottom - padding.top)
-                            .style('fill', scale_color(averages[i]));
+                            .style('fill', color);
                 }
             }
             
@@ -447,26 +460,28 @@ function graph(){
             
             //returns the closest of the two objects to the value
             function closestDataPointToValueX(object1, object2, value){
-                if( null === object1){
-                    if(null !== object2)
+                if( undefined === object1){
+                    if(undefined !== object2)
                         return object2;
-                } else if(null === object2)
+                } else if(undefined === object2)
                     return object1;
-                var xObject1 = timeFormat.parse(object1.x);
-                var xObject2 = timeFormat.parse(object2.x);
-                var inBetweenObjects = (xObject2 - xObject1)/2;
-                if(value < new Date(xObject1.getTime() + inBetweenObjects)) return object1;
-                    else return object2;
+                else {
+                    var xObject1 = timeFormat.parse(object1.x);
+                    var xObject2 = timeFormat.parse(object2.x);
+                    var inBetweenObjects = (xObject2 - xObject1)/2;
+                    if(value < new Date(xObject1.getTime() + inBetweenObjects)) return object1;
+                        else return object2;
+                } 
             }         
             
             //-------TRENDLINE METHODS--------
             function initTrendline(){
-		var trendline = svg.append('g')
+		var trendlineg = svg.append('g')
                         .attr('class', 'trendlinegroup')
                         .style('stroke', color)
                         .style('opacity', 0.2);
 			
-		trendline.append('path')
+		trendlineg.append('path')
 			.attr('class', 'trendline')
                         .attr('clip-path', 'url(#clip_' + name + ')')
 			.attr('stroke-width', 1.5) 
@@ -484,10 +499,10 @@ function graph(){
                     tmp_data.push({'x': steps_date[i].toISOString(), 'y':averages[i]});
                 }
                 
-                var trendline = svg.select('g.trendlinegroup');
+                var trendlineg = svg.select('g.trendlinegroup');
 			
-		trendline.select('.trendline')
-			.attr('d', line(tmp_data)); 
+		trendlineg.select('.trendline')
+			.attr('d', trendline(tmp_data)); 
             }
             
             function getStepsDateArr_Data(amount){               
@@ -497,7 +512,10 @@ function graph(){
                     var add = step * i;
                     arr[i] = new Date(timeFormat.parse(data[0].x).getTime() + add);
                 }
-                arr[amount] = domain[1];
+                if(domain[1] <= timeFormat.parse(data[data.length-1].x))
+                    arr[amount] = domain[1];
+                else 
+                    arr[amount] = timeFormat.parse(data[data.length-1].x);
                 return arr;
             }
 

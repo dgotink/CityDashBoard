@@ -8,7 +8,6 @@ function graph_buttonbar(keys){
     var updateHeight;
     
     var button_padding = 5;
-    var button_size = height - button_padding - button_padding;
     
     var button_keys = keys;
     var button_pressed = {};
@@ -58,22 +57,58 @@ function graph_buttonbar(keys){
                     .attr("height", height);       
             }
             
-            function buttons(){
+            function initButtons(){
                 button_group = svg.append('g')
                     .attr('class', 'buttongroup');
             
-                button_keys.forEach(function(key, i){
-                    button_dictionary[key] = button_group.append('rect')
-                        .attr('id', key)
+                button_keys.forEach(function(key){
+                    var group = button_group.append('g')
                         .attr('class', 'button')
-                        .attr('x', padding.left + (i * (button_size + button_padding)))
-                        .attr('y', button_padding)
-                        .attr('width', button_size)
-                        .attr('height', button_size)
-                        .attr('fill', 'black')
+                        .attr('id', key)
                         .on('click', onClick);
-                });               
+                
+                    group.append('rect')
+                        .attr('class', 'buttonbackground')
+                        .style('fill', 'black')
+                        .style('opacity', '1');
+                
+                    group.append('text')
+                        .attr('class', 'buttontext')
+                        .attr('pointer-events', 'none')
+                        .text(key)
+                        .style('font-size', 16)
+                        .style('font-family', 'Helvetica Neue,Helvetica,Arial,sans-serif;')
+                        .style('fill', 'white');
+                
+                    button_dictionary[key] = group;
+                });
+                updateButtons();
             }
+            
+            function updateButtons() { 
+                var fontsize = 16;
+                var last_x = padding.left;
+                for(var key in button_dictionary){
+                    var group = button_dictionary[key];
+                    var buttonbox = group.select('.buttonbackground');
+                    var buttontext = group.select('.buttontext');
+                    
+                    buttontext
+                        .attr('x', last_x + 5 + 5)
+                        .attr('y', ((height - padding.top - padding.bottom)/2) + fontsize/2)
+                        .style('font-size', fontsize);
+                
+                    var bbox = buttontext.node().getBBox();
+                    last_x = bbox.x + bbox.width + 5;
+                    
+                    buttonbox
+                            .attr('x', bbox.x - 5)
+                            .attr('y', padding.top)
+                            .attr('width', bbox.width + 10)
+                            .attr('height', height - padding.top - padding.bottom)
+                            .style('visibility', 'visible');
+                }           
+            };
             
             function onClick(){
                 var key = this.id;
@@ -85,14 +120,15 @@ function graph_buttonbar(keys){
             }
             
             initSvg();
-            buttons();
+            initButtons();
             
             updateWidth = function(){
                 updateSvg();
             };
             
             updateHeight = function(){
-                updateSvg();              
+                updateSvg();  
+                updateButtons();
             }; 
         });
     };
@@ -107,7 +143,6 @@ function graph_buttonbar(keys){
     chart.setHeight = function(value) {
     	if (!arguments.length) return height;
     	height = value;
-        button_size = height - button_padding - button_padding;
     	if (typeof updateHeight === 'function') updateHeight();
     	return chart;
     };

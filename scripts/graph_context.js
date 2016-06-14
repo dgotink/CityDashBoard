@@ -31,7 +31,7 @@ function graph_context(){
             //brush var for choosing the focus
             var brush;
             //timeformat var
-            var timeFormat = d3.time.format('%Y-%m-%dT%H:%M:%S.%LZ');
+            var timeFormat = d3.time.format('%Y-%m-%dT%H:%M:%S.%L%Z');
 
             //makes and appends the svg to the element and adds buttons 
             function svg(){
