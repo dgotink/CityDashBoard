@@ -3,6 +3,7 @@ function graph(){
     var name;
     var label;
     var color;
+    var backgroundcolor = 'white';
     var domain;
     var data;
     var element;
@@ -15,6 +16,7 @@ function graph(){
     var updateWidth;
     var updateHeight;
     var updateDomain;
+    var updateBackgroundcolor;
     //indicator vars
     var moveIndicator;
     var showIndicator;
@@ -54,6 +56,8 @@ function graph(){
             var trendline;
             //svg and element var
             var svg;
+            var background;
+            var background_draw;
             element = this;
             var clip_linepath; 
             //draw vars
@@ -66,6 +70,12 @@ function graph(){
             var mouse_indicator;
             var indicator_box;
             var data_information_group;
+            //triangle var
+            var triangle_up;
+            var triangle_down;
+            var triangle_top;
+            var triangle_bottom;
+            var triangle_size = 30;
             //timeformat var
             var timeFormat = d3.time.format('%Y-%m-%dT%H:%M:%S.%L%Z');
             var timeFormatISO = d3.time.format('%Y-%m-%dT%H:%M:%S.%LZ');
@@ -83,12 +93,23 @@ function graph(){
                     .style('display', 'block')
                     .on('click', onClick);
             
+                background_group = svg.append('g')
+                    .attr('class', 'backgrounds');
+            
+                background = background_group.append('rect')
+                        .attr('class', 'background')
+                        .style('fill', 'none');
+                
+                background_draw = background_group.append('rect')
+                        .attr('class', 'background')
+                        .style('fill', 'white');
+
                 var clip = svg.append('clipPath')
                         .attr('id', 'clip_' + name);
                 
                 clip_linepath = clip.append('rect')
                     .attr('pointer-events', 'none')
-                    .style('opacity', '0')
+                    .style('opacity', '1')
                     .attr('x', padding.left)
                     .attr('y', 0)
                     .attr('width', width - padding.left - padding.right)
@@ -110,6 +131,18 @@ function graph(){
                     //.transition().duration(1000)
                     .attr('width', width)
                     .attr('height', height);
+                
+                background
+                    .attr('x', 0)
+                    .attr('y', 0)
+                    .attr('width', width)
+                    .attr('height', height);
+            
+                background_draw
+                    .attr('x', padding.left)
+                    .attr('y', padding.top)
+                    .attr('width', width - padding.left - padding.right)
+                    .attr('height', height - padding.bottom - padding.top);
             
                 clip_linepath
                     .attr('x', padding.left)
@@ -123,54 +156,99 @@ function graph(){
                     .attr('height', height);               
             }
             
+            //-------TRIANGLE METHODS-------
+            function initTriangles(){
+                triangle_up = d3.svg.symbol().type('triangle-up')
+                    .size(triangle_size);
+                                
+                triangle_down = d3.svg.symbol().type('triangle-down')
+                    .size(triangle_size);
+                                
+                triangle_top = svg.append('g')
+                    .attr('class', 'triangletop')
+                    .append('path')
+                        .attr('class', 'trianglePath')
+                        .attr('d',triangle_up)
+                        .attr('fill', color);
+                
+                triangle_bottom = svg.append('g')
+                    .attr('class', 'trianglebottom')
+                    .append('path')
+                        .attr('class', 'trianglePath')
+                        .attr('d',triangle_down)
+                        .attr('fill', color);                   
+            }
+            
+            function updateTriangles(){ 
+                if(!selected){
+                   var bbox = triangle_top.node().getBBox();
+                        
+                    triangle_top
+                        .attr('transform', 'translate(' + (padding.left + 10) + ',' + (height/2 - 2 - bbox.height/2) + ')');
+
+                    bbox = triangle_bottom.node().getBBox();
+                
+                    triangle_bottom
+                        .attr('transform', 'translate(' + (padding.left + 10) + ',' + (height/2 + 2 + bbox.height/2) + ')');   
+                } else {
+                   var bbox = triangle_top.node().getBBox();
+                        
+                    triangle_top
+                        .attr('transform', 'translate(' + (padding.left + 10) + ',' + (padding.top + 10 - bbox.height/2) + ')');
+
+                    bbox = triangle_bottom.node().getBBox();
+                
+                    triangle_bottom
+                        .attr('transform', 'translate(' + (padding.left + 10) + ',' + ((height-padding.bottom) - 10 + bbox.height/2) + ')');   
+                }
+                
+            }
+            
+            function rotateTriangles(){
+                if(!selected){
+                    triangle_top
+                        .attr('d',triangle_up);
+                
+                    triangle_bottom
+                        .attr('d',triangle_down);
+                
+                } else {
+                    triangle_top
+                        .attr('d',triangle_down);
+                
+                    triangle_bottom
+                        .attr('d',triangle_up);
+                }
+            }
+            
             //-------LABEL METHODS--------
             function initLabel(){
+                var fontsize = 16;
+                
                 label_group = svg.append('g')
                     .attr('class', 'labelgroup');
                 
                 label_background = label_group.append('rect')
                     .attr('class', 'labelbackground')
-                    .style('fill', 'white')
-                    .style('opacity', '1');
+                    .style('fill', 'white');
                 
                 label_text = label_group.append('text')
                     .attr('class', 'labeltext')
-                    .text(label)
-                    .style('font-size', 16)
+                    .text(label.toUpperCase())
+                    .attr('x', padding.left + 5)
+                    .attr('y', padding.top + fontsize + 5)
+                    .style('font-size', fontsize)
                     .style('font-family', 'Helvetica Neue,Helvetica,Arial,sans-serif;')
                     .style('fill', 'color');
-            }
             
-            var updateLabel = function() { 
-                var fontsize = 16;
-                if(selected){
-                    var value = domain[1];
-                    if(value > timeFormat.parse(data[data.length-1].x))
-                        value = timeFormat.parse(data[data.length-1].x);
-                    var index = bisect(data, value);
-                    label_text
-                        .text(label)
-                        .attr('x', width - padding.right + 10)
-                        .attr('y', scale_y(data[index].y));
-                                    
-                    label_background.style('visibility', 'hidden');
-                } else {
-                    label_text
-                        .text(label.toUpperCase())
-                        .attr('x', padding.left + 5)
-                        .attr('y', padding.top + 5 + fontsize/2)
-                        .style('font-size', fontsize);
-                        
-                    var bbox = label_text.node().getBBox();
+                var bbox = label_text.node().getBBox();
                     
-                    label_background
-                            .attr('x', padding.left)
-                            .attr('y', padding.top)
-                            .attr('width', bbox.width + 10)
-                            .attr('height', bbox.height)
-                            .style('visibility', 'visible');
-                }             
-            };
+                label_background
+                    .attr('x', padding.left)
+                    .attr('y', padding.top + fontsize)
+                    .attr('width', bbox.width + 10)
+                    .attr('height', bbox.height);
+            }
             
             //-------INDICATOR METHODS--------
             function initIndicator(){
@@ -263,6 +341,7 @@ function graph(){
             function draw(){
                 draw_group = svg.append('g')
                     .attr('class', 'drawgroup');
+
                 drawLine();
                 if(!selected){
                     draw_group.select('.line').style('visibility', 'hidden');
@@ -374,7 +453,7 @@ function graph(){
                     
                     var color = scale_color(averages[i]);
                     if(color === '#NaNNaNNaN')
-                        color = 'white';
+                        color = backgroundcolor;
                     
 
                     container.append('rect')
@@ -408,14 +487,14 @@ function graph(){
                 data_information_group.append('text')
                     .attr('class', 'datatext');
 
-                data_information_group.append('circle')
-                    .attr('class', 'datacircle')
-                    .attr('r', 3)
-                    .style('fill', color);
+                //data_information_group.append('circle')
+                //    .attr('class', 'datacircle')
+                //    .attr('r', 3)
+                //    .style('fill', color);
             
-                data_information_group.append('line')
-                    .attr('class', 'dataline')
-                    .style('stroke', color);
+                //data_information_group.append('line')
+                //    .attr('class', 'dataline')
+                //    .style('stroke', color);
             }
             
             showDataInformation = function(){
@@ -447,15 +526,15 @@ function graph(){
                     .attr('width', bounding_box.width +10)
                     .attr('height', bounding_box.height +4);
                     
-                data_information_group.select('.datacircle')
-                    .attr('cx', scale_x(timeFormat.parse(dataset.x)))
-                    .attr('cy', scale_y(dataset.y));
+                //data_information_group.select('.datacircle')
+                //    .attr('cx', scale_x(timeFormat.parse(dataset.x)))
+                //    .attr('cy', scale_y(dataset.y));
             
-                data_information_group.select('.dataline')
-                    .attr('x1', scale_x(timeFormat.parse(dataset.x)))
-                    .attr('x2', bounding_box.x -5)
-                    .attr('y1', scale_y(dataset.y))
-                    .attr('y2', scale_y(dataset.y));
+                //data_information_group.select('.dataline')
+                //    .attr('x1', scale_x(timeFormat.parse(dataset.x)))
+                //    .attr('x2', bounding_box.x -5)
+                //    .attr('y1', scale_y(dataset.y))
+                //    .attr('y2', scale_y(dataset.y));
             };
             
             //returns the closest of the two objects to the value
@@ -566,7 +645,6 @@ function graph(){
             updateDomain = function(){
                 scale_x.domain(domain);
                 updateAxis();
-                updateLabel();
                 redraw();
                 updateTrendline();
             };
@@ -576,25 +654,24 @@ function graph(){
                 scales();
                 updateAxis();
                 redraw();
-                updateLabel();
                 updateTrendline();
             };
             
             updateWidth = function(){
                 updateSvg();
+                updateTriangles();
                 scales();
                 updateAxis();
                 redraw();
-                updateLabel();
                 updateTrendline();
             };
             
             updateHeight = function(){
                 updateSvg();
+                updateTriangles();
                 scales();
                 updateAxis();
                 redraw();
-                updateLabel();
                 updateIndicator();
                 updateTrendline();              
             };
@@ -609,16 +686,24 @@ function graph(){
                     svg.select('.axis').style('visibility', 'visible');
                     showDataInformation();
                 }
-                updateLabel();
+                rotateTriangles();
+                redraw();
+            };
+            
+            updateBackgroundcolor = function(){
+                background
+                    .style('fill', backgroundcolor);
                 redraw();
             };
 
             function init(){
                 initSvg();
+                
                 mapData();
                 scales();
                 initAxis();
                 draw();
+                initTriangles();
                 initLabel();
                 initIndicator();
                 initTrendline();
@@ -641,12 +726,17 @@ function graph(){
     
     chart.setLabel = function(value){
         label = value;
-        if (typeof updateData === 'function') updateLabel();
         return chart;
     };
     
     chart.setColor = function(value){
         color = value;
+        return chart;
+    };
+    
+    chart.setBackgroundcolor = function(value){
+        backgroundcolor = value;
+        if (typeof updateBackgroundcolor === 'function') updateBackgroundcolor();
         return chart;
     };
     

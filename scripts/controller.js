@@ -6,14 +6,11 @@ function controller(data) {
     var map_data = {};
     var map_graph = {};
     var map_selected = {};
-    var map_active = {};
     //packery and their divs
     var packery_main;
     var packery_grid;
-    var packery_group = {};
     var div_main;
     var div_grid;  
-    var div_group = {};
     //height and width var
     var width = window.innerWidth;
     var height = window.innerHeight;
@@ -30,11 +27,11 @@ function controller(data) {
     var buttonbar_graph;
     var buttonbar_height = 50;
     //key vars
-    var city_keys = ['Antwerpen', 'Brussel', 'Leuven'];
-    var theme_keys = ['TEMPERATURE', 'HUMIDITY', 'PRESSURE'];
     var button_keys = ['SWAP LINES', 'SORT BY CITY', 'SORT BY THEME'];
     //just for the sake of ease keep a height - contextheight
     var grid_height = height - context_height - buttonbar_height;
+    //colorscheme
+    var colorscheme = createColorScheme();
     
     //init
     function init(){
@@ -42,7 +39,6 @@ function controller(data) {
         initPackeryMain();
         initButtonBar();
         initPackeryGrid();
-        packeries();
         initContextGraph();
         createGraphs();
     }
@@ -103,30 +99,6 @@ function controller(data) {
             itemSelector: '.grid-item'
         });
     }
-    
-    function packeries(){
-        city_keys.forEach(function(key){
-            //create the packery groups together with the div groups
-            var gridItem = document.createElement('div');
-            gridItem.setAttribute('class', 'grid-item');
-            
-            var graphContainer = document.createElement('div');
-            graphContainer.setAttribute('class', 'graph-container');
-            
-            gridItem.appendChild(graphContainer);
-            div_grid.appendChild(gridItem);
-            
-            div_group[key] = graphContainer;
-            
-            packery_grid.appended(gridItem);
-            packery_group[key] = new Packery(graphContainer, {
-                //options
-                gutter: 0,
-                itemSelector: '.' + key + '-item'
-            });
-            map_active[key] = true;
-        }); 
-    }
 
     //maps the data in different dictionaries/maps (do at startup or data changes)
     function mapData(){
@@ -177,12 +149,12 @@ function controller(data) {
             //create a div and append it to div_grid and packery_grid
             var element = document.createElement('div');
             element.setAttribute('id', key);
-            element.setAttribute('class', city + '-item');
-            div_group[city].appendChild(element);
-            packery_group[city].appended(element);
+            element.setAttribute('class', 'grid-item');
+            div_grid.appendChild(element);
+            packery_grid.appended(element);
             //make the grid item draggable    
             var draggie = new Draggabilly(element);
-            packery_group[city].bindDraggabillyEvents(draggie);
+            packery_grid.bindDraggabillyEvents(draggie);
             //make the graph and add it to the map_graph    
             map_graph[key] = graph()
                 .setName(key)
@@ -203,7 +175,6 @@ function controller(data) {
             map_selected[key] = false;           
         }
         updateHeight();
-        packery_group[city].layout();
         packery_grid.layout();
         packery_main.layout();
     }
@@ -234,27 +205,21 @@ function controller(data) {
             //give the graph the command to update his height
             map_graph[key].setHeight(new_height);
             //call for a relayout
-            layout();  
+            packery_grid.layout();  
         } 
     }
-    
-    //calls for a layout on all active packery instances
-    function layout(){
-        for(var key in packery_group){
-            if(map_active[key])
-                packery_group[key].layout();
-        }
-    };
 
     //the on click event for the normal graphs
     var onClickGraph = function(name){
-         if(map_selected[name]){
-            map_selected[name] = false;
-        } else {
-            map_selected[name] = true;
+        if(document.querySelector('.packery-drop-placeholder') === null){
+            if(map_selected[name]){
+                map_selected[name] = false;
+            } else {
+                map_selected[name] = true;
+            }
+            map_graph[name].setSelected(map_selected[name]);
+            updateHeight();
         }
-        map_graph[name].setSelected(map_selected[name]);
-        updateHeight();
     };
     
     var onMouseEnterGraph = function(){
@@ -303,6 +268,7 @@ function controller(data) {
             for(var key in map_graph){
                 if(map_city[key] === city){
                     order.push(map_graph[key].getElement());
+                    map_graph[key].setBackgroundcolor(colorscheme[city]);
                 }  
             }
         });
@@ -319,6 +285,7 @@ function controller(data) {
             for(var key in map_graph){
                 if(map_theme[key] === theme){
                     order.push(map_graph[key].getElement());
+                    map_graph[key].setBackgroundcolor(colorscheme[theme]);
                 }  
             }
         });
