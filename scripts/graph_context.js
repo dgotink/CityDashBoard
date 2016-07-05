@@ -110,8 +110,17 @@ function graph_context(){
                     .scale(xScale)
                     .orient('bottom')
                     .ticks(d3.time.hour, 3)
-                    .tickFormat('') 
-                    .tickSize(8, 0);
+                    .tickFormat(function(d){
+                        var hours = d.getHours();
+                        if (hours === 6)
+                            return '☼';
+                        else if (hours === 18)
+                            return '☾';
+                        else
+                            return null;
+                    })
+                    .tickSize(8, 0)
+                    .tickPadding(5);
                     
             
                 axis_day = d3.svg.axis()
@@ -170,9 +179,9 @@ function graph_context(){
                     .attr('class', function(d){
                         hours = d.getHours();
                         if(hours < 6 || hours >= 18)
-                            return 'nighttime'
+                            return 'nighttime';
                         else
-                            return 'daytime'
+                            return 'daytime';
                     })
                     .attr('x', 0)
                     .attr('width', pixels_rect_width)
@@ -207,7 +216,7 @@ function graph_context(){
                     .attr('class', 'brush')
                     .call(brush)
                     .selectAll('rect')
-                        .style('fill', 'white')  
+                        .style('fill', '696576')  
                         .attr('y', 0)
                         .attr('height', height);
             }
