@@ -33,11 +33,8 @@ function controller(data) {
     var grid_height = height - context_height - buttonbar_height;
     //colorscheme
     var colorscheme = createColorScheme();
-<<<<<<< HEAD
     //keeps the active headers
     var active_headers = [];
-=======
->>>>>>> 750b2b495aa6ed04c1a21236c3eac717de8d9f18
     
     //init
     function init(){
@@ -77,7 +74,6 @@ function controller(data) {
                 .setOnChildBrushed(onBrushedContext);                
         d3.select(context_div).call(context_graph);
         packery_main.appended(context_div);
-<<<<<<< HEAD
     }
     
     //intitializes the main packery (this one is used to layout the buttonbar, grid, and context
@@ -124,8 +120,6 @@ function controller(data) {
                 .call(map_headers[head]);
         });  
     }
-=======
-    }
     
     //intitializes the main packery (this one is used to layout the buttonbar, grid, and context
     function initPackeryMain(){
@@ -154,7 +148,6 @@ function controller(data) {
             itemSelector: '.grid-item'
         });
     }
->>>>>>> 750b2b495aa6ed04c1a21236c3eac717de8d9f18
 
     //maps the data in different dictionaries/maps (do at startup or data changes)
     function mapData(){
@@ -280,12 +273,9 @@ function controller(data) {
             }
             map_graph[name].setSelected(map_selected[name]);
             updateHeight();
-<<<<<<< HEAD
         } else {
             if(active_headers.length > 0)
                 removeHeaders();
-=======
->>>>>>> 750b2b495aa6ed04c1a21236c3eac717de8d9f18
         }
     };
     
@@ -302,10 +292,7 @@ function controller(data) {
             map_graph[key].moveIndicator(position);
             map_graph[key].moveDataInformation(position);
         } 
-<<<<<<< HEAD
         context_graph.moveDataInformation(position);
-=======
->>>>>>> 750b2b495aa6ed04c1a21236c3eac717de8d9f18
     };
     
     var onMouseLeaveGraph = function(){
@@ -335,16 +322,12 @@ function controller(data) {
     };
     
     function sortByCity(){
-<<<<<<< HEAD
         if(active_headers.length > 0)
             removeHeaders();
         var cities = findCities();
         var order = [];
         var tmp_active = [];
-=======
-        var cities = findCities();
-        var order = [];
->>>>>>> 750b2b495aa6ed04c1a21236c3eac717de8d9f18
+
         cities.forEach(function(city){
             var tmp = map_headers[city].getElement();
             map_headers[city].setColor(colorscheme['forground'][city]);
@@ -356,7 +339,6 @@ function controller(data) {
             for(var key in map_graph){
                 if(map_city[key] === city){
                     order.push(map_graph[key].getElement());
-<<<<<<< HEAD
                     map_graph[key].setBackgroundcolor(colorscheme['background'][city]);
                     var theme = map_theme[key];
                     map_graph[key].setColor(colorscheme['forground'][city]);
@@ -365,12 +347,6 @@ function controller(data) {
         });
         active_headers = tmp_active;
         updateHeight();
-=======
-                    map_graph[key].setBackgroundcolor(colorscheme[city]);
-                }  
-            }
-        });
->>>>>>> 750b2b495aa6ed04c1a21236c3eac717de8d9f18
         packery_grid.items.forEach(function(o, index){
             o.element = order[index];
         }) ;
@@ -378,7 +354,6 @@ function controller(data) {
     }
     
     function sortByTheme(){
-<<<<<<< HEAD
         if(active_headers.length > 0)
             removeHeaders();
         var themes = findThemes();
@@ -403,23 +378,10 @@ function controller(data) {
         });
         active_headers = tmp_active;
         updateHeight();
-=======
-        var themes = findThemes();
-        var order = [];
-        themes.forEach(function(theme){
-            for(var key in map_graph){
-                if(map_theme[key] === theme){
-                    order.push(map_graph[key].getElement());
-                    map_graph[key].setBackgroundcolor(colorscheme[theme]);
-                }  
-            }
-        });
->>>>>>> 750b2b495aa6ed04c1a21236c3eac717de8d9f18
         packery_grid.items.forEach(function(o, index){
             o.element = order[index];
         }) ;
         packery_grid.layout();
-<<<<<<< HEAD
     }
     
     function removeHeaders(){
@@ -430,8 +392,6 @@ function controller(data) {
         active_headers = [];
         updateHeight();
         packery_grid.layout();
-=======
->>>>>>> 750b2b495aa6ed04c1a21236c3eac717de8d9f18
     }
     
     init();

@@ -42,7 +42,7 @@ function graph_buttonbar(keys){
                     .attr('y', 0)
                     .attr('width', width)
                     .attr('height', height)
-                    .style('fill', '#17141f')
+                    .style('fill', '#27252D')
                     .style('stroke', 'black')
                     .style('stroke-width', 1.5);
             }
@@ -69,11 +69,7 @@ function graph_buttonbar(keys){
                 
                     group.append('rect')
                         .attr('class', 'buttonbackground')
-<<<<<<< HEAD
-                        .style('fill', '#282530')
-=======
-                        .style('fill', 'black')
->>>>>>> 750b2b495aa6ed04c1a21236c3eac717de8d9f18
+                        .style('fill', '#4A4755')
                         .style('opacity', '1');
                 
                     group.append('text')

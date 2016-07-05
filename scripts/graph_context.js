@@ -36,7 +36,6 @@ function graph_context(){
             var element = this;
             //brush var for choosing the focus
             var brush;
-<<<<<<< HEAD
             //
             var data_information_group;
             var last_shown;
@@ -45,10 +44,6 @@ function graph_context(){
             var timeDisplayFormat = d3.time.format('%H:%M');
             //bisect var
             var bisect = d3.bisector(function(d) { return d; }).left;
-=======
-            //timeformat var
-            var timeFormat = d3.time.format('%Y-%m-%dT%H:%M:%S.%L%Z');
->>>>>>> 750b2b495aa6ed04c1a21236c3eac717de8d9f18
 
             //makes and appends the svg to the element and adds buttons 
             function svg(){
@@ -65,7 +60,7 @@ function graph_context(){
                     .attr('y', 0)
                     .attr('width', width)
                     .attr('height', height)
-                    .style('fill', '#17141f')
+                    .style('fill', '#27252D')
                     .style('stroke', 'white')
                     .style('stroke-width', 1.5);                             
             }
@@ -73,12 +68,12 @@ function graph_context(){
             function updateSvg() {
                 svg
                     //.transition().duration(1000)
-                    .attr("width", width)
-                    .attr("height", height);
+                    .attr('width', width)
+                    .attr('height', height);
             
                 svg.select('.background')
-                    .attr("width", width)
-                    .attr("height", height);               
+                    .attr('width', width)
+                    .attr('height', height);               
             }
             
             function rearrangeData(){
@@ -151,19 +146,19 @@ function graph_context(){
                 svg.append('g')
                     .style('stroke', 'white')
                     .attr('pointer-events', 'none')
-                    .attr('class', 'controller-axis hours')
+                    .attr('class', 'context-axis hours')
                     .call(axis_hour); 
             
                 svg.append('g')
                     .style('stroke', 'white')
                     .attr('pointer-events', 'none')
-                    .attr('class', 'controller-axis days')
+                    .attr('class', 'context-axis days')
                     .call(axis_day); 
             
                 svg.append('g')
                     .style('stroke', 'white')
                     .attr('pointer-events', 'none')
-                    .attr('class', 'controller-axis-label')
+                    .attr('class', 'context-axis-label')
                     .call(axis_label); 
             
                 addHourRects();
@@ -181,7 +176,8 @@ function graph_context(){
                     })
                     .attr('x', 0)
                     .attr('width', pixels_rect_width)
-                    .attr('height', 8);    
+                    .attr('height', 8)
+                    .style('stroke', 'none');
             }
 
             function updateAxes() {
