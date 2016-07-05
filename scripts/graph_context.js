@@ -36,6 +36,7 @@ function graph_context(){
             var element = this;
             //brush var for choosing the focus
             var brush;
+<<<<<<< HEAD
             //
             var data_information_group;
             var last_shown;
@@ -44,6 +45,10 @@ function graph_context(){
             var timeDisplayFormat = d3.time.format('%H:%M');
             //bisect var
             var bisect = d3.bisector(function(d) { return d; }).left;
+=======
+            //timeformat var
+            var timeFormat = d3.time.format('%Y-%m-%dT%H:%M:%S.%L%Z');
+>>>>>>> 750b2b495aa6ed04c1a21236c3eac717de8d9f18
 
             //makes and appends the svg to the element and adds buttons 
             function svg(){

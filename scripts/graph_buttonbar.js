@@ -69,7 +69,11 @@ function graph_buttonbar(keys){
                 
                     group.append('rect')
                         .attr('class', 'buttonbackground')
+<<<<<<< HEAD
                         .style('fill', '#282530')
+=======
+                        .style('fill', 'black')
+>>>>>>> 750b2b495aa6ed04c1a21236c3eac717de8d9f18
                         .style('opacity', '1');
                 
                     group.append('text')

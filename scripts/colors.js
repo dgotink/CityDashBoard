@@ -1,5 +1,6 @@
 function createColorScheme(){
     var dict = {};
+<<<<<<< HEAD
     dict['forground'] = {};
     dict['background'] = {};
     
@@ -17,5 +18,13 @@ function createColorScheme(){
     dict['forground']['pressure'] = '#A4457B';
     dict['forground']['humidity'] = '#598B97';
     
+=======
+    dict['Antwerpen'] = '#CEC4E3';
+    dict['Brussel'] = '#E1F5D1';
+    dict['Leuven'] = '#E09B9B';
+    dict['temperature'] = '#FFDBBA';
+    dict['pressure'] = '#DDA0C3';
+    dict['humidity'] = '#BDD7DD';
+>>>>>>> 750b2b495aa6ed04c1a21236c3eac717de8d9f18
     return dict;
 }

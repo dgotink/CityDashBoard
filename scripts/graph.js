@@ -16,7 +16,10 @@ function graph(){
     var updateWidth;
     var updateHeight;
     var updateDomain;
+<<<<<<< HEAD
     var updateColor;
+=======
+>>>>>>> 750b2b495aa6ed04c1a21236c3eac717de8d9f18
     var updateBackgroundcolor;
     //indicator vars
     var moveIndicator;
@@ -55,12 +58,19 @@ function graph(){
             var line_animation;
             var line;   
             var trendline;
+<<<<<<< HEAD
             var area;
             var trend_area;
             //svg and element var
             var svg;
             var background;
             //var background_draw;
+=======
+            //svg and element var
+            var svg;
+            var background;
+            var background_draw;
+>>>>>>> 750b2b495aa6ed04c1a21236c3eac717de8d9f18
             element = this;
             var clip_linepath; 
             //draw vars
@@ -73,7 +83,10 @@ function graph(){
             var mouse_indicator;
             var indicator_box;
             var data_information_group;
+<<<<<<< HEAD
             var last_shown;
+=======
+>>>>>>> 750b2b495aa6ed04c1a21236c3eac717de8d9f18
             //triangle var
             var triangle_up;
             var triangle_down;
@@ -104,9 +117,15 @@ function graph(){
                         .attr('class', 'background')
                         .style('fill', 'none');
                 
+<<<<<<< HEAD
                 /*background_draw = background_group.append('rect')
                         .attr('class', 'background')
                         .style('fill', 'white');*/
+=======
+                background_draw = background_group.append('rect')
+                        .attr('class', 'background')
+                        .style('fill', 'white');
+>>>>>>> 750b2b495aa6ed04c1a21236c3eac717de8d9f18
 
                 var clip = svg.append('clipPath')
                         .attr('id', 'clip_' + name);
@@ -142,11 +161,19 @@ function graph(){
                     .attr('width', width)
                     .attr('height', height);
             
+<<<<<<< HEAD
                /*background_draw
                     .attr('x', padding.left)
                     .attr('y', padding.top)
                     .attr('width', width - padding.left - padding.right)
                     .attr('height', height - padding.bottom - padding.top);*/
+=======
+                background_draw
+                    .attr('x', padding.left)
+                    .attr('y', padding.top)
+                    .attr('width', width - padding.left - padding.right)
+                    .attr('height', height - padding.bottom - padding.top);
+>>>>>>> 750b2b495aa6ed04c1a21236c3eac717de8d9f18
             
                 clip_linepath
                     .attr('x', padding.left)
@@ -188,26 +215,42 @@ function graph(){
                    var bbox = triangle_top.node().getBBox();
                         
                     triangle_top
+<<<<<<< HEAD
                         .attr('transform', 'translate(' + (padding.left + 10) + ',' + (height/2 - 2 - bbox.height/2) + ')')
                         .attr('fill', color);
+=======
+                        .attr('transform', 'translate(' + (padding.left + 10) + ',' + (height/2 - 2 - bbox.height/2) + ')');
+>>>>>>> 750b2b495aa6ed04c1a21236c3eac717de8d9f18
 
                     bbox = triangle_bottom.node().getBBox();
                 
                     triangle_bottom
+<<<<<<< HEAD
                         .attr('transform', 'translate(' + (padding.left + 10) + ',' + (height/2 + 2 + bbox.height/2) + ')')
                         .attr('fill', color);
+=======
+                        .attr('transform', 'translate(' + (padding.left + 10) + ',' + (height/2 + 2 + bbox.height/2) + ')');   
+>>>>>>> 750b2b495aa6ed04c1a21236c3eac717de8d9f18
                 } else {
                    var bbox = triangle_top.node().getBBox();
                         
                     triangle_top
+<<<<<<< HEAD
                         .attr('transform', 'translate(' + (padding.left + 10) + ',' + (padding.top + 20 - bbox.height/2) + ')')
                         .attr('fill', color);
+=======
+                        .attr('transform', 'translate(' + (padding.left + 10) + ',' + (padding.top + 10 - bbox.height/2) + ')');
+>>>>>>> 750b2b495aa6ed04c1a21236c3eac717de8d9f18
 
                     bbox = triangle_bottom.node().getBBox();
                 
                     triangle_bottom
+<<<<<<< HEAD
                         .attr('transform', 'translate(' + (padding.left + 10) + ',' + ((height-padding.bottom) - 20 + bbox.height/2) + ')')
                         .attr('fill', color);
+=======
+                        .attr('transform', 'translate(' + (padding.left + 10) + ',' + ((height-padding.bottom) - 10 + bbox.height/2) + ')');   
+>>>>>>> 750b2b495aa6ed04c1a21236c3eac717de8d9f18
                 }
                 
             }
@@ -243,13 +286,19 @@ function graph(){
                 label_text = label_group.append('text')
                     .attr('class', 'labeltext')
                     .text(label.toUpperCase())
+<<<<<<< HEAD
                     .attr('x', padding.left + 100 + 5)
                     .attr('y', padding.top + fontsize/2 + 5)
+=======
+                    .attr('x', padding.left + 5)
+                    .attr('y', padding.top + fontsize + 5)
+>>>>>>> 750b2b495aa6ed04c1a21236c3eac717de8d9f18
                     .style('font-size', fontsize)
                     .style('font-family', 'Helvetica Neue,Helvetica,Arial,sans-serif;')
                     .style('fill', 'color');
             
                 var bbox = label_text.node().getBBox();
+<<<<<<< HEAD
                 
                 if(selected){
                     label_background
@@ -269,6 +318,14 @@ function graph(){
             function updateLabel(){
                 label_group.remove();
                 initLabel();
+=======
+                    
+                label_background
+                    .attr('x', padding.left)
+                    .attr('y', padding.top + fontsize)
+                    .attr('width', bbox.width + 10)
+                    .attr('height', bbox.height);
+>>>>>>> 750b2b495aa6ed04c1a21236c3eac717de8d9f18
             }
             
             //-------INDICATOR METHODS--------
@@ -336,6 +393,7 @@ function graph(){
                 trendline = d3.svg.line().interpolate('linear')
                     .x(function(d){ return scale_x(timeFormatISO.parse(d.x)); })
                     .y(function(d){ return scale_y(d.y); });
+<<<<<<< HEAD
             
                 area = d3.svg.area()
                     .x(function(d) { return scale_x(timeFormat.parse(d.x)); })
@@ -346,6 +404,8 @@ function graph(){
                     .x(function(d) { return scale_x(timeFormatISO.parse(d.x)); })
                     .y0(height - padding.bottom)
                     .y1(function(d) { return scale_y(d.y); });
+=======
+>>>>>>> 750b2b495aa6ed04c1a21236c3eac717de8d9f18
             }
             
             //-------AXIS METHODS--------
@@ -531,10 +591,17 @@ function graph(){
                 data_information_group.append('text')
                     .attr('class', 'datatext');
 
+<<<<<<< HEAD
                 data_information_group.append('circle')
                     .attr('class', 'datacircle')
                     .attr('r', 3)
                     .style('fill', color);
+=======
+                //data_information_group.append('circle')
+                //    .attr('class', 'datacircle')
+                //    .attr('r', 3)
+                //    .style('fill', color);
+>>>>>>> 750b2b495aa6ed04c1a21236c3eac717de8d9f18
             
                 //data_information_group.append('line')
                 //    .attr('class', 'dataline')
@@ -582,11 +649,18 @@ function graph(){
                         .attr('width', bounding_box.width +10)
                         .attr('height', bounding_box.height +4);
                     
+<<<<<<< HEAD
                     data_information_group.select('.datacircle')
                         .attr('cx', scale_x(timeFormat.parse(dataset.x)))
                         .attr('cy', scale_y(dataset.y)); 
                 }
 
+=======
+                //data_information_group.select('.datacircle')
+                //    .attr('cx', scale_x(timeFormat.parse(dataset.x)))
+                //    .attr('cy', scale_y(dataset.y));
+            
+>>>>>>> 750b2b495aa6ed04c1a21236c3eac717de8d9f18
                 //data_information_group.select('.dataline')
                 //    .attr('x1', scale_x(timeFormat.parse(dataset.x)))
                 //    .attr('x2', bounding_box.x -5)
@@ -613,7 +687,10 @@ function graph(){
             //-------TRENDLINE METHODS--------
             function initTrendline(){
 		var trendlineg = svg.append('g')
+<<<<<<< HEAD
                         .attr('pointer-events', 'none')
+=======
+>>>>>>> 750b2b495aa6ed04c1a21236c3eac717de8d9f18
                         .attr('class', 'trendlinegroup')
                         .style('stroke', color)
                         .style('opacity', 0.2);
@@ -642,6 +719,7 @@ function graph(){
                 }
                 
                 var trendlineg = svg.select('g.trendlinegroup');
+<<<<<<< HEAD
                 
                 trendlineg.selectAll('.area')
                     .style('fill', color)
@@ -651,6 +729,10 @@ function graph(){
 			
 		trendlineg.select('.trendline')
                         .style('stroke', color)
+=======
+			
+		trendlineg.select('.trendline')
+>>>>>>> 750b2b495aa6ed04c1a21236c3eac717de8d9f18
 			.attr('d', trendline(tmp_data)); 
             }
             
@@ -762,12 +844,15 @@ function graph(){
                 redraw();
             };
             
+<<<<<<< HEAD
             updateColor = function(){
                 scales();
                 redraw();
                 updateTriangles();
             };
             
+=======
+>>>>>>> 750b2b495aa6ed04c1a21236c3eac717de8d9f18
             updateBackgroundcolor = function(){
                 background
                     .style('fill', backgroundcolor);
@@ -810,6 +895,12 @@ function graph(){
     chart.setColor = function(value){
         color = value;
         if (typeof updateColor === 'function') updateColor();
+        return chart;
+    };
+    
+    chart.setBackgroundcolor = function(value){
+        backgroundcolor = value;
+        if (typeof updateBackgroundcolor === 'function') updateBackgroundcolor();
         return chart;
     };
     
