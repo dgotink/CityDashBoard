@@ -149,7 +149,6 @@ function graph_context(){
                         }
                         else
                             return null;
-                       
                     });
             
                 svg.append('g')

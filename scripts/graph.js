@@ -46,6 +46,7 @@ function graph(){
             //mapped data vars
             var mapped_data_x;
             var mapped_data_y;
+            var average_data;
             //scale vars
             var scale_x;
             var scale_y;
@@ -56,14 +57,11 @@ function graph(){
             var line_animation;
             var line;   
             var trendline;
-
             var area;
             var trend_area;
             //svg and element var
             var svg;
             var background;
-            //var background_draw;
-
             element = this;
             var clip_linepath; 
             //draw vars
@@ -86,9 +84,9 @@ function graph(){
             var triangle_size = 30;
             //timeformat var
             var timeFormat = d3.time.format('%Y-%m-%dT%H:%M:%S.%L%Z');
-            var timeFormatISO = d3.time.format('%Y-%m-%dT%H:%M:%S.%LZ');
             //bisect var
             var bisect = d3.bisector(function(d) { return timeFormat.parse(d.x); }).left;
+            var bisectNoParse = d3.bisector(function(d) { return d.x; }).left;
             
             //-------SVG METHODS--------
             function initSvg(){
@@ -334,7 +332,7 @@ function graph(){
                     .y(function(d){ return scale_y(d.y); }); 
             
                 trendline = d3.svg.line().interpolate('linear')
-                    .x(function(d){ return scale_x(timeFormatISO.parse(d.x)); })
+                    .x(function(d){ return scale_x(d.x); })
                     .y(function(d){ return scale_y(d.y); });
             
                 area = d3.svg.area()
@@ -343,7 +341,7 @@ function graph(){
                     .y1(function(d) { return scale_y(d.y); });
             
                 trend_area = d3.svg.area()
-                    .x(function(d) { return scale_x(timeFormatISO.parse(d.x)); })
+                    .x(function(d) { return scale_x(d.x); })
                     .y0(height - padding.bottom)
                     .y1(function(d) { return scale_y(d.y); });
             }
@@ -468,27 +466,39 @@ function graph(){
                 return arr;
             }
             
-            function drawTiles() {
+            function determineAverages(){
                 var amount = 100;
-                var steps_date = getStepsDateArr_Domain(amount);
+                var steps_date = getStepsDateArr_Data(amount);
                 var steps_indices = getStepsIndicesArr(steps_date);
                 var averages = getAveragesArr(amount, steps_indices);
-                removeTiles();
+                average_data = [];
                 
+                for(var i = 0; i < averages.length; i++){
+                    var entry = {};
+                    entry['x'] = steps_date[i];
+                    entry['y'] = averages[i];
+                    average_data[i] = entry;
+                }
+            }
+            
+            function drawTiles() {
+                removeTiles();
+                determineAverages();
+
                 var container = draw_group.append('g')
                         .attr('pointer-events', 'none')
                         .attr('class', 'tiles');
                
-                for(var i = 0; i < averages.length; i++){
+                for(var i = 0; i < average_data.length; i++){
                     //find the middle between 2 points (tiles are drawn from the middle of 2 points to another middle)
-                    var current = scale_x(steps_date[i]);
-                    var prev = steps_date[i-1];
+                    var current = scale_x(average_data[i].x);
+                    var prev = average_data[i-1];
                     if(prev !== undefined)
-                        prev = scale_x(prev);
+                        prev = scale_x(prev.x);
                     else prev = current;
-                    var next = steps_date[i+1];
+                    var next = average_data[i+1];
                     if(next !== undefined)
-                        next = scale_x(next);
+                        next = scale_x(next.x);
                     else next = current;
                     
                     var x1 = (prev + current)/2;
@@ -496,10 +506,9 @@ function graph(){
                     
                     var tmp_width = x2 - x1;
                     
-                    var color = scale_color(averages[i]);
+                    var color = scale_color(average_data[i].y);
                     if(color === '#NaNNaNNaN')
                         color = backgroundcolor;
-                    
 
                     container.append('rect')
                             .attr('class', 'tile')
@@ -538,7 +547,7 @@ function graph(){
             }
             
             showDataInformation = function(){
-                if(selected && trendFocus !== true)
+                if(selected)
                     data_information_group
                         .style('visibility', 'visible');
             };
@@ -549,15 +558,25 @@ function graph(){
             };
             
             moveDataInformation = function(position){
+                var currentdata = data;
                 var date =  scale_x.invert(position);
-                var index = bisect(data, date);
-                var dataset = closestDataPointToValueX(data[index-1], data[index], date); 
+                var index = 0;
+                if(trendFocus){
+                    currentdata = average_data;
+                    index = bisectNoParse(currentdata, date);
+                } else {
+                    index = bisect(currentdata, date);
+                }
+                var dataset = closestDataPointToValueX(currentdata[index-1], currentdata[index], date); 
+                var datasetX;
+                if(trendFocus) datasetX = dataset.x;
+                else datasetX = timeFormat.parse(dataset.x);
                 
                 if(dataset.x !== last_shown){
                     last_shown = dataset.x;
                     var txt = data_information_group.select('.datatext')
                         .attr('text-anchor', 'start')
-                        .attr('x', scale_x(timeFormat.parse(dataset.x)) + 20)
+                        .attr('x', scale_x(datasetX) + 20)
                         .attr('y', scale_y(dataset.y) + 4)
                         .text(dataset.y.toFixed(2));
             
@@ -565,7 +584,7 @@ function graph(){
                 
                     if(bounding_box.x + bounding_box.width > width){
                         txt
-                            .attr('x', scale_x(timeFormat.parse(dataset.x)) - 20)
+                            .attr('x', scale_x(datasetX) - 20)
                             .attr('y', scale_y(dataset.y) + 4)
                             .attr('text-anchor', 'end');
                 
@@ -579,7 +598,7 @@ function graph(){
                         .attr('height', bounding_box.height +4);
                     
                     data_information_group.select('.datacircle')
-                        .attr('cx', scale_x(timeFormat.parse(dataset.x)))
+                        .attr('cx', scale_x(datasetX))
                         .attr('cy', scale_y(dataset.y)); 
                 }
             };
@@ -592,8 +611,13 @@ function graph(){
                 } else if(undefined === object2)
                     return object1;
                 else {
-                    var xObject1 = timeFormat.parse(object1.x);
-                    var xObject2 = timeFormat.parse(object2.x);
+                    if(trendFocus){
+                        var xObject1 = object1.x;
+                        var xObject2 = object2.x;
+                    } else {
+                        var xObject1 = timeFormat.parse(object1.x);
+                        var xObject2 = timeFormat.parse(object2.x);
+                    }
                     var inBetweenObjects = (xObject2 - xObject1)/2;
                     if(value < new Date(xObject1.getTime() + inBetweenObjects)) return object1;
                         else return object2;
@@ -623,15 +647,7 @@ function graph(){
             }
             
             function updateTrendline(){
-                var amount = 50;
-                var steps_date = getStepsDateArr_Data(amount);
-                var steps_indices = getStepsIndicesArr(steps_date);
-                var averages = getAveragesArr(amount, steps_indices);
-                
-                var tmp_data = [];
-                for(var i = 0; i <= amount; i++){
-                    tmp_data.push({'x': steps_date[i].toISOString(), 'y':averages[i]});
-                }
+                determineAverages();
                 
                 var trendlineg = svg.select('g.trendlinegroup');
 
@@ -639,11 +655,11 @@ function graph(){
                     .style('fill', color)
                     .attr('clip-path', 'url(#clip_' + name + ')')
                     //.transition().duration(800)
-                    .attr('d', trend_area(tmp_data));
+                    .attr('d', trend_area(average_data));
 			
 		trendlineg.select('.trendline')
                         .style('stroke', color)
-			.attr('d', trendline(tmp_data)); 
+			.attr('d', trendline(average_data)); 
             }
             
             function getStepsDateArr_Data(amount){               
@@ -678,28 +694,24 @@ function graph(){
                 onMouseLeave();
             }
             
-            //
+            //FUNCTION TO CHANGE THE FOCUS ON THE TRENDLINE OR THE ACTUAL DATA LINE
             swapLinesCommand = function(){
                 if(trendFocus){
                     trendFocus = false;
-
                        svg.select('g.trendlinegroup')
                             .transition().duration(1000)
                             .style('opacity', 0.2);
                         svg.select('g.linegroup')
                             .transition().duration(1000)
-                            .style('opacity', 1); 
-                                       
+                            .style('opacity', 1);            
                 } else {
                     trendFocus = true;
-
                        svg.select('g.trendlinegroup')
                             .transition().duration(1000)
                             .style('opacity', 1);
                         svg.select('g.linegroup')
                             .transition().duration(1000)
                             .style('opacity', 0.2); 
-                    
                 }
             };
             

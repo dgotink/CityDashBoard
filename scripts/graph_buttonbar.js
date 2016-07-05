@@ -53,8 +53,8 @@ function graph_buttonbar(keys){
                     .attr('height', height);
             
                 svg.select('.background')
-                    .attr("width", width)
-                    .attr("height", height);       
+                    .attr('width', width)
+                    .attr('height', height);       
             }
             
             function initButtons(){
