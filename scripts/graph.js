@@ -468,7 +468,7 @@ function graph(){
             
             function determineAverages(){
                 var amount = 100;
-                var steps_date = getStepsDateArr_Data(amount);
+                var steps_date = getStepsDateArr_Domain(amount);
                 var steps_indices = getStepsIndicesArr(steps_date);
                 var averages = getAveragesArr(amount, steps_indices);
                 average_data = [];
@@ -477,6 +477,8 @@ function graph(){
                     var entry = {};
                     entry['x'] = steps_date[i];
                     entry['y'] = averages[i];
+                    if(isNaN(entry['y']))
+                       entry['y'] = averages[i-1]; 
                     average_data[i] = entry;
                 }
             }
