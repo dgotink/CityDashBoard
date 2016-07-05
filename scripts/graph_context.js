@@ -12,6 +12,11 @@ function graph_context(){
     
     var onChildBrushed;
     
+    //data information vars
+    var moveDataInformation;
+    var showDataInformation;
+    var hideDataInformation;
+    
     var domain;
 
     //the function that makes the linegraph
@@ -21,6 +26,7 @@ function graph_context(){
             var mapX;
             //scale vars
             var xScale;
+            var pixels_rect_width;
             //axis var
             var axis_hour;
             var axis_day;
@@ -30,8 +36,14 @@ function graph_context(){
             var element = this;
             //brush var for choosing the focus
             var brush;
-            //timeformat var
-            var timeFormat = d3.time.format('%Y-%m-%dT%H:%M:%S.%LZ');
+            //
+            var data_information_group;
+            var last_shown;
+            //timeformat vars
+            var timeFormat = d3.time.format('%Y-%m-%dT%H:%M:%S.%L%Z');
+            var timeDisplayFormat = d3.time.format('%H:%M');
+            //bisect var
+            var bisect = d3.bisector(function(d) { return d; }).left;
 
             //makes and appends the svg to the element and adds buttons 
             function svg(){
@@ -48,10 +60,9 @@ function graph_context(){
                     .attr('y', 0)
                     .attr('width', width)
                     .attr('height', height)
-                    .style('fill', '#EEEEEE')
-                    .style('stroke', 'black')
-                    .style('stroke-width', 1.5);
-                                                
+                    .style('fill', '#17141f')
+                    .style('stroke', 'white')
+                    .style('stroke-width', 1.5);                             
             }
 
             function updateSvg() {
@@ -84,6 +95,13 @@ function graph_context(){
                     .domain(d3.extent(mapX))
                     .range([padding.left, width - padding.right]); 
             
+                var millis = ((1000 * 60) * 60) * 3;
+                var begin = Date.now();
+                var end = begin;
+                end += millis;
+                end = new Date(end);
+                pixels_rect_width = xScale(end) - xScale(new Date(begin));
+            
                 domain = xScale.domain();
             }
             
@@ -94,6 +112,7 @@ function graph_context(){
                     .ticks(d3.time.hour, 3)
                     .tickFormat('') 
                     .tickSize(8, 0);
+                    
             
                 axis_day = d3.svg.axis()
                     .scale(xScale)
@@ -116,7 +135,8 @@ function graph_context(){
                             else {
                                 formatter = d3.time.format.utc('%a %d');
                             }
-                            return formatter(d);
+                            var str = formatter(d);
+                            return str.toUpperCase();
                         }
                         else
                             return null;
@@ -124,18 +144,41 @@ function graph_context(){
                     });
             
                 svg.append('g')
-                    .attr('class', 'axis hours')
+                    .style('stroke', 'white')
+                    .attr('pointer-events', 'none')
+                    .attr('class', 'controller-axis hours')
                     .call(axis_hour); 
             
                 svg.append('g')
-                    .attr('class', 'axis days')
+                    .style('stroke', 'white')
+                    .attr('pointer-events', 'none')
+                    .attr('class', 'controller-axis days')
                     .call(axis_day); 
             
                 svg.append('g')
-                    .attr('class', 'axis_label')
+                    .style('stroke', 'white')
+                    .attr('pointer-events', 'none')
+                    .attr('class', 'controller-axis-label')
                     .call(axis_label); 
+            
+                addHourRects();
             }
             
+            function addHourRects(){
+                svg.select('g.hours').selectAll('g.tick')
+                    .insert('rect', ':first-child')
+                    .attr('class', function(d){
+                        hours = d.getHours();
+                        if(hours < 6 || hours >= 18)
+                            return 'nighttime'
+                        else
+                            return 'daytime'
+                    })
+                    .attr('x', 0)
+                    .attr('width', pixels_rect_width)
+                    .attr('height', 8);    
+            }
+
             function updateAxes() {
                 axis_hour
                     .scale(xScale);
@@ -184,6 +227,90 @@ function graph_context(){
                 onChildBrushed(domain);
             }
             
+            //-------DATA INFORMATION METHODS--------
+            function initDataInformation(){
+                data_information_group = svg.append('g')
+                    .attr('pointer-events', 'none')
+                    .attr('class', 'data_information')
+                    .style('visibility', 'hidden');
+            
+                data_information_group.append('rect')
+                    .attr('class', 'databox')
+                    .style('fill', 'white')
+                    //.style('opacity', '0.5')
+                    .style('stroke', 'black')
+                    .style('stroke-width', 1);
+                
+                data_information_group.append('text')
+                    .attr('class', 'datatext');
+            
+                data_information_group.append('circle')
+                    .attr('class', 'datacircle')
+                    .attr('r', 3)
+                    .style('fill', 'black');
+            }
+            
+            showDataInformation = function(){
+                data_information_group
+                    .style('visibility', 'visible');
+            };
+            
+            hideDataInformation = function(){
+                data_information_group
+                    .style('visibility', 'hidden');
+            };
+            
+            moveDataInformation = function(position){
+                var date =  xScale.invert(position);
+                var index = bisect(mapX, date);
+                var dataset = closestDataPointToValueX(mapX[index-1], mapX[index], date); 
+                
+                if(dataset !== last_shown){
+                    last_shown = dataset;
+                    var txt = data_information_group.select('.datatext')
+                        .attr('text-anchor', 'start')
+                        .attr('x', xScale(dataset) + 20)
+                        .attr('y', 20)
+                        .text(timeDisplayFormat(dataset));
+            
+                    var bounding_box = txt.node().getBBox();
+                
+                    if(bounding_box.x + bounding_box.width > width){
+                        txt
+                            .attr('x', xScale(dataset) - 20)
+                            .attr('text-anchor', 'end');
+                
+                        bounding_box = txt.node().getBBox();
+                    }
+                
+                    data_information_group.select('.databox')
+                        .attr('x', bounding_box.x -5)
+                        .attr('y', bounding_box.y -2)
+                        .attr('width', bounding_box.width +10)
+                        .attr('height', bounding_box.height +4);
+            
+                    data_information_group.select('.datacircle')
+                        .attr('cx', xScale(dataset))
+                    .attr('cy', 0); 
+                }   
+
+                
+            };
+            
+            //returns the closest of the two objects to the value
+            function closestDataPointToValueX(object1, object2, value){
+                if( undefined === object1){
+                    if(undefined !== object2)
+                        return object2;
+                } else if(undefined === object2)
+                    return object1;
+                else {
+                    var inBetweenObjects = (object2 - object1)/2;
+                    if(value < new Date(object1.getTime() + inBetweenObjects)) return object1;
+                        else return object2;
+                } 
+            }         
+            
             updateData = function() {
                 rearrangeData();
                 mapData();
@@ -212,6 +339,7 @@ function graph_context(){
             scales();
             initBrush();
             axes();
+            initDataInformation();
             
         });
     };
@@ -226,7 +354,7 @@ function graph_context(){
     chart.setWidth = function(value) {
     	if (!arguments.length) return width;
     	width = value;
-        padding = {'top': height/12, 'right': width/12, 'bottom': height/12, 'left': 40};
+        padding = {'top': height/18, 'right': 10, 'bottom': height/18, 'left': 10};
     	if (typeof updateWidth === 'function') updateWidth();
     	return chart;
     };
@@ -234,7 +362,7 @@ function graph_context(){
     chart.setHeight = function(value) {
     	if (!arguments.length) return height;
     	height = value;
-        padding = {'top': height/12, 'right': width/12, 'bottom': height/12, 'left': 40};
+        padding = {'top': height/18, 'right': 10, 'bottom': height/18, 'left': 10};
     	if (typeof updateHeight === 'function') updateHeight();
     	return chart;
     };
@@ -248,5 +376,23 @@ function graph_context(){
         return domain;
     };
       
+    chart.moveDataInformation = function(value){
+        if (typeof moveDataInformation === 'function')
+            moveDataInformation(value);
+        return chart;
+    };
+    
+    chart.showDataInformation = function(){
+        if (typeof showDataInformation === 'function')
+            showDataInformation();
+        return chart;
+    };
+    
+    chart.hideDataInformation = function(){
+        if (typeof hideDataInformation === 'function')
+            hideDataInformation();
+        return chart;
+    };
+            
     return chart;    
 }
