@@ -2,7 +2,7 @@ function graph_buttonbar(keys){
     //variables
     var width;
     var height;
-    var padding = {'top': 5, 'right': 120, 'bottom': 5, 'left': 40};
+    var padding = {'top': 5, 'right': 10, 'bottom': 5, 'left': 10};
     
     var updateWidth;
     var updateHeight;
@@ -11,6 +11,10 @@ function graph_buttonbar(keys){
     
     var button_keys = keys;
     var button_pressed = {};
+    
+    var max_selected;
+    var changeTriangleText;
+    var flashRed;
     
     button_keys.forEach(function(key){
         button_pressed[key] = false;
@@ -27,6 +31,12 @@ function graph_buttonbar(keys){
             //buttongroup var
             var button_group;
             var button_dictionary = {};
+            //triangles
+            var triangle_top;
+            var triangle_bottom;
+            var trianglegroup;
+            var triangletext;
+            var trianglerect;
             
             function initSvg(){
                 //make the svg
@@ -56,6 +66,70 @@ function graph_buttonbar(keys){
                     .attr('width', width)
                     .attr('height', height);       
             }
+            
+            function initTriangles(){
+                var triangle_up = d3.svg.symbol().type('triangle-up')
+                    .size(50);
+                                
+                var triangle_down = d3.svg.symbol().type('triangle-down')
+                    .size(50);
+            
+                trianglegroup = svg.append('g')
+                    .attr('class', 'trianglegroup');
+            
+                trianglerect = trianglegroup.append('rect')
+                        .attr('class', 'background')
+                        .attr('x', padding.left)
+                        .attr('y', padding.top)
+                        .attr('width', 65)
+                        .attr('height', 40)
+                        .style('fill', 'none');
+                                
+                triangle_top = trianglegroup.append('g')
+                    .attr('class', 'triangletop')
+                    .append('path')
+                        .attr('class', 'trianglePath')
+                        .attr('d',triangle_down)
+                        .attr('fill', 'white');
+                
+                triangle_bottom = trianglegroup.append('g')
+                    .attr('class', 'trianglebottom')
+                    .append('path')
+                        .attr('class', 'trianglePath')
+                        .attr('d',triangle_up)
+                        .attr('fill', 'white');
+                
+                var bbox = triangle_top.node().getBBox();
+                        
+                triangle_top
+                    .attr('transform', 'translate(' + (padding.left + 10) + ',' + (padding.top + 6 + bbox.height/2) + ')');
+
+                bbox = triangle_bottom.node().getBBox();
+                
+                triangle_bottom
+                    .attr('transform', 'translate(' + (padding.left + 10) + ',' + ((height-padding.bottom) - 6 - bbox.height/2) + ')');
+            
+                triangletext = trianglegroup.append('text')
+                    .attr('class', 'triangletext')
+                    .style('font-size', 16)
+                    .style('font-family', 'Helvetica Neue,Helvetica,Arial,sans-serif;')
+                    .style('fill', 'white')
+                    .attr('x', padding.left + 30)
+                    .attr('y', padding.top + 16 + 10)
+                    .text('0/' + max_selected);
+            }
+            
+            changeTriangleText = function(amount){
+                triangletext
+                    .text(amount + '/' + max_selected);
+            };
+            
+            flashRed = function(){
+                trianglerect
+                        .style('fill', 'red')
+                        .transition().delay(500).duration(1000)
+                        .style('fill', '#27252D');
+            };
             
             function initButtons(){
                 button_group = svg.append('g')
@@ -87,7 +161,7 @@ function graph_buttonbar(keys){
             
             function updateButtons() { 
                 var fontsize = 16;
-                var last_x = padding.left;
+                var last_x = 100;
                 for(var key in button_dictionary){
                     var group = button_dictionary[key];
                     var buttonbox = group.select('.buttonbackground');
@@ -95,7 +169,7 @@ function graph_buttonbar(keys){
                     
                     buttontext
                         .attr('x', last_x + 5 + 5)
-                        .attr('y', ((height - padding.top - padding.bottom)/2) + fontsize/2)
+                        .attr('y', padding.top + 16 + 10)
                         .style('font-size', fontsize);
                 
                     var bbox = buttontext.node().getBBox();
@@ -121,6 +195,7 @@ function graph_buttonbar(keys){
             
             initSvg();
             initButtons();
+            initTriangles();
             
             updateWidth = function(){
                 updateSvg();
@@ -155,6 +230,21 @@ function graph_buttonbar(keys){
     chart.getButtonPressedDictionary = function(){
         return button_pressed;
     };
+    
+    chart.setMaxSelected = function(value){
+        max_selected = value;
+        return chart;
+    }
+    
+    chart.updateTriangleText = function(value){
+        if (typeof changeTriangleText === 'function') changeTriangleText(value);
+        return chart;  
+    };
+    
+    chart.flashRed = function(){
+        if (typeof flashRed === 'function') flashRed();
+        return chart;
+    }
     
     return chart;    
 }

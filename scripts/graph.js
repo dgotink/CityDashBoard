@@ -47,6 +47,7 @@ function graph(){
             var mapped_data_x;
             var mapped_data_y;
             var average_data;
+            var average_domain;
             //scale vars
             var scale_x;
             var scale_y;
@@ -466,9 +467,9 @@ function graph(){
                 return arr;
             }
             
-            function determineAverages(){
-                var amount = 100;
-                var steps_date = getStepsDateArr_Domain(amount);
+            function determineAveragesData(){
+                var amount = 60;
+                var steps_date = getStepsDateArr_Data(amount);
                 var steps_indices = getStepsIndicesArr(steps_date);
                 var averages = getAveragesArr(amount, steps_indices);
                 average_data = [];
@@ -483,22 +484,39 @@ function graph(){
                 }
             }
             
+            function determineAveragesDomain(){
+                var amount = 60;
+                var steps_date = getStepsDateArr_Domain(amount);
+                var steps_indices = getStepsIndicesArr(steps_date);
+                var averages = getAveragesArr(amount, steps_indices);
+                average_domain = [];
+                
+                for(var i = 0; i < averages.length; i++){
+                    var entry = {};
+                    entry['x'] = steps_date[i];
+                    entry['y'] = averages[i];
+                    if(isNaN(entry['y']))
+                       entry['y'] = averages[i-1]; 
+                    average_domain[i] = entry;
+                }
+            }
+            
             function drawTiles() {
                 removeTiles();
-                determineAverages();
+                determineAveragesDomain();
 
                 var container = draw_group.append('g')
                         .attr('pointer-events', 'none')
                         .attr('class', 'tiles');
                
-                for(var i = 0; i < average_data.length; i++){
+                for(var i = 0; i < average_domain.length; i++){
                     //find the middle between 2 points (tiles are drawn from the middle of 2 points to another middle)
-                    var current = scale_x(average_data[i].x);
-                    var prev = average_data[i-1];
+                    var current = scale_x(average_domain[i].x);
+                    var prev = average_domain[i-1];
                     if(prev !== undefined)
                         prev = scale_x(prev.x);
                     else prev = current;
-                    var next = average_data[i+1];
+                    var next = average_domain[i+1];
                     if(next !== undefined)
                         next = scale_x(next.x);
                     else next = current;
@@ -508,7 +526,7 @@ function graph(){
                     
                     var tmp_width = x2 - x1;
                     
-                    var color = scale_color(average_data[i].y);
+                    var color = scale_color(average_domain[i].y);
                     if(color === '#NaNNaNNaN')
                         color = backgroundcolor;
 
@@ -649,7 +667,7 @@ function graph(){
             }
             
             function updateTrendline(){
-                determineAverages();
+                determineAveragesData();
                 
                 var trendlineg = svg.select('g.trendlinegroup');
 
@@ -722,7 +740,8 @@ function graph(){
                 scale_x.domain(domain);
                 updateAxis();
                 redraw();
-                updateTrendline();
+                if(selected)
+                    updateTrendline();
             };
             
             updateData = function(){

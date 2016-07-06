@@ -18,6 +18,7 @@ function controller(data) {
     //this array contains the values to which you multiply the height to get the total height for all the selected linegraphs
     //this array has a size the same as half the amount of graphs drawn +1 (for 0)
     //the index is the amount of selected graphs
+    var max_selected = 3;
     var selected_heights = [0, 0.4, 0.55, 0.67, 0.76, 0.76, 0.76];
     //context vars
     var context_div;
@@ -56,7 +57,8 @@ function controller(data) {
         buttonbar_graph = graph_buttonbar(button_keys)
                 .setWidth(width)
                 .setHeight(buttonbar_height)
-                .setOnClick(onClickButtonBar);
+                .setOnClick(onClickButtonBar)
+                .setMaxSelected(max_selected);
         d3.select(buttonbar_div).call(buttonbar_graph);
         packery_main.appended(buttonbar_div);    
     }
@@ -105,7 +107,8 @@ function controller(data) {
             gutter: 0,
             itemSelector: '.grid-item'
         });
-        packery_grid.on( 'dragItemPositioned', removeHeaders);
+        //packery_grid.on('dragItemPositioned', removeHeaders);
+        
     }
     
     function initHeaders(){
@@ -197,7 +200,6 @@ function controller(data) {
     function createGraphs(){
         //foreach dataset
         for(var key in map_data){
-            var city = map_city[key];
             //create a div and append it to div_grid and packery_grid
             var element = document.createElement('div');
             element.setAttribute('id', key);
@@ -226,6 +228,10 @@ function controller(data) {
             //make the selected boolean and add it to the map_selected    
             map_selected[key] = false;           
         }
+        packery_grid.on('dragItemPositioned', function(  draggedItem ) {
+            console.log( 'Packery dragged item positioned', draggedItem.element );
+            removeHeaders();
+        });
         updateHeight();
         packery_grid.layout();
         packery_main.layout();
@@ -269,18 +275,28 @@ function controller(data) {
     //the on click event for the normal graphs
     var onClickGraph = function(name){
         if(document.querySelector('.packery-drop-placeholder') === null){
+            var amount = findAmountSelected();
             if(map_selected[name]){
                 map_selected[name] = false;
+                amount--;
             } else {
-                map_selected[name] = true;
+                if(amount < max_selected) {
+                    map_selected[name] = true;
+                    amount++;
+                } else {
+                    buttonbar_graph.flashRed(); 
+                }       
             }
             map_graph[name].setSelected(map_selected[name]);
+            
+            buttonbar_graph.updateTriangleText(amount);
             updateHeight();
         } else {
             if(active_headers.length > 0)
                 removeHeaders();
         }
     };
+   
     
     var onMouseEnterGraph = function(){
         for (var key in map_graph) {            
@@ -353,6 +369,10 @@ function controller(data) {
         packery_grid.items.forEach(function(o, index){
             o.element = order[index];
         }) ;
+        packery_grid.on('dragItemPositioned', function(  draggedItem ) {
+            console.log( 'Packery dragged item positioned', draggedItem.element );
+            removeHeaders();
+        });
         packery_grid.layout();
     }
     
@@ -384,6 +404,10 @@ function controller(data) {
         packery_grid.items.forEach(function(o, index){
             o.element = order[index];
         }) ;
+        packery_grid.on('dragItemPositioned', function(  draggedItem ) {
+            console.log( 'Packery dragged item positioned', draggedItem.element );
+            removeHeaders();
+        });
         packery_grid.layout();
     }
     
@@ -392,6 +416,7 @@ function controller(data) {
             var tmp = map_headers[key].getElement();
             packery_grid.remove(tmp);
         });
+
         active_headers = [];
         updateHeight();
         packery_grid.layout();
