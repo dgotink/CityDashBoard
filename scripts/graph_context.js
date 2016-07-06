@@ -16,6 +16,10 @@ function graph_context(){
     var moveDataInformation;
     var showDataInformation;
     var hideDataInformation;
+    //controller functions
+    var onMouseEnter;
+    var onMouseMove;
+    var onMouseLeave;
     
     var domain;
 
@@ -48,13 +52,17 @@ function graph_context(){
             //makes and appends the svg to the element and adds buttons 
             function svg(){
                 //make the svg
-                svg = d3.select(element)
+                svg = d3.select(element)  
                     .append('svg')
                     .attr('width', width)
                     .attr('height', height)
-                    .attr('class', 'svgbox');
+                    .attr('class', 'svgbox')
+                    .on('mouseenter', onEnter)
+                    .on('mouseleave', onLeave)
+                    .on('mousemove', onMove);
                 
                 svg.append('rect')
+                    .attr('pointer-events', 'none')
                     .attr('class', 'background')
                     .attr('x', 0)
                     .attr('y', 0)
@@ -62,18 +70,31 @@ function graph_context(){
                     .attr('height', height)
                     .style('fill', '#27252D')
                     .style('stroke', 'white')
-                    .style('stroke-width', 1.5);                             
+                    .style('stroke-width', 1.5);  
+            }
+            
+            function onEnter(){
+                onMouseEnter();
+            }
+            
+            function onMove(){
+                var position = d3.mouse(this)[0];
+                if(position >= padding.left && position <= width - padding.right)
+                    onMouseMove(position);
+            }
+            
+            function onLeave(){
+                onMouseLeave();
             }
 
             function updateSvg() {
                 svg
-                    //.transition().duration(1000)
                     .attr('width', width)
                     .attr('height', height);
             
                 svg.select('.background')
                     .attr('width', width)
-                    .attr('height', height);               
+                    .attr('height', height);   
             }
             
             function rearrangeData(){
@@ -256,7 +277,7 @@ function graph_context(){
                 data_information_group.append('circle')
                     .attr('class', 'datacircle')
                     .attr('r', 3)
-                    .style('fill', 'black');
+                    .style('fill', 'red');
             }
             
             showDataInformation = function(){
@@ -402,6 +423,21 @@ function graph_context(){
             hideDataInformation();
         return chart;
     };
-            
+    
+    chart.setOnMouseEnter = function(value){
+        onMouseEnter = value;
+        return chart;
+    };
+    
+    chart.setOnMouseMove = function(value){
+        onMouseMove = value;
+        return chart;
+    };
+    
+    chart.setOnMouseLeave = function(value){
+        onMouseLeave = value;
+        return chart;
+    };
+         
     return chart;    
 }

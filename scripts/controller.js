@@ -28,7 +28,7 @@ function controller(data) {
     var buttonbar_graph;
     var buttonbar_height = 50;
     //key vars
-    var button_keys = ['SWAP LINES', 'SORT BY CITY', 'SORT BY THEME'];
+    var button_keys = ['SWAP LINES', 'ORDER BY CITY', 'ORDER BY ATTRIBUTE'];
     //just for the sake of ease keep a height - contextheight
     var grid_height = height - context_height - buttonbar_height;
     //colorscheme
@@ -71,7 +71,10 @@ function controller(data) {
                 .setData(map_data)
                 .setWidth(width)
                 .setHeight(context_height)
-                .setOnChildBrushed(onBrushedContext);                
+                .setOnChildBrushed(onBrushedContext)
+                .setOnMouseEnter(onMouseEnterGraph)
+                .setOnMouseMove(onMouseMoveGraph)
+                .setOnMouseLeave(onMouseLeaveGraph);
         d3.select(context_div).call(context_graph);
         packery_main.appended(context_div);
     }
@@ -314,9 +317,9 @@ function controller(data) {
             for(var key in map_graph) {
                 map_graph[key].swapLines();
             }
-        } else if(name === 'SORT BY CITY'){
+        } else if(name === 'ORDER BY CITY'){
             sortByCity();
-        } else if(name === 'SORT BY THEME'){
+        } else if(name === 'ORDER BY ATTRIBUTE'){
             sortByTheme();
         }           
     };
