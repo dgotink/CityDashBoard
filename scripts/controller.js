@@ -19,11 +19,11 @@ function controller(data) {
     //this array has a size the same as half the amount of graphs drawn +1 (for 0)
     //the index is the amount of selected graphs
     var max_selected = 6;
-    var selected_heights = [0, 0.4, 0.55, 0.67, 0.76, 0.76, 0.76];
+    var selected_heights = [0, 0.4, 0.55, 0.67, 0.76, 0.80, 0.84];
     //context vars
     var context_div;
     var context_graph;
-    var context_height = 50;
+    var context_height = 250;
     //buttongroup vars
     var buttonbar_div;
     var buttonbar_graph;
@@ -35,7 +35,7 @@ function controller(data) {
     //colorscheme
     var colorscheme = createColorScheme();
     //keeps the active headers
-    var active_headers = [];
+    //var active_headers = [];
     
     //init
     function init(){
@@ -45,7 +45,7 @@ function controller(data) {
         initPackeryGrid();
         initContextGraph();
         createGraphs();
-        initHeaders();
+        sortByTheme();
     }
     
     function initButtonBar(){
@@ -76,7 +76,8 @@ function controller(data) {
                 .setOnChildBrushed(onBrushedContext)
                 .setOnMouseEnter(onMouseEnterGraph)
                 .setOnMouseMove(onMouseMoveGraph)
-                .setOnMouseLeave(onMouseLeaveGraph);
+                .setOnMouseLeave(onMouseLeaveGraph)
+                .setOnIntroClick(onIntroClick);
         d3.select(context_div).call(context_graph);
         packery_main.appended(context_div);
     }
@@ -111,7 +112,7 @@ function controller(data) {
         
     }
     
-    function initHeaders(){
+    /*function initHeaders(){
         var headers = ['Antwerpen', 'Brussel', 'Leuven', 'temperature', 'pressure', 'humidity'];
         headers.forEach(function(head){
             var element = document.createElement('div');
@@ -125,7 +126,7 @@ function controller(data) {
             d3.select(element)
                 .call(map_headers[head]);
         });  
-    }
+    }*/
     
     //intitializes the main packery (this one is used to layout the buttonbar, grid, and context
     function initPackeryMain(){
@@ -248,9 +249,9 @@ function controller(data) {
     //updates the height for every graph in map_graph
     function updateHeight() {
         var offset = 0;
-        active_headers.forEach(function(key){
+        /*active_headers.forEach(function(key){
             offset += map_headers[key].getHeight();
-        });
+        });*/
         var height_after_offset = grid_height - offset;
         //get the amount of selected graphs
         var amount_selected = findAmountSelected();
@@ -292,8 +293,8 @@ function controller(data) {
             buttonbar_graph.updateTriangleText(amount);
             updateHeight();
         } else {
-            if(active_headers.length > 0)
-                removeHeaders();
+            /*if(active_headers.length > 0)
+                removeHeaders();*/
         }
     };
    
@@ -341,55 +342,55 @@ function controller(data) {
     };
     
     function sortByCity(){
-        if(active_headers.length > 0)
-            removeHeaders();
+        /*if(active_headers.length > 0)
+            removeHeaders();*/
         var cities = findCities();
         var order = [];
         var tmp_active = [];
 
         cities.forEach(function(city){
-            var tmp = map_headers[city].getElement();
-            map_headers[city].setColor(colorscheme['forground'][city]);
-            map_headers[city].setBackgroundColor(colorscheme['background'][city]);
-            div_grid.appendChild(tmp);
-            packery_grid.appended(tmp);
-            order.push(tmp);
-            tmp_active.push(city);
+            //var tmp = map_headers[city].getElement();
+            //map_headers[city].setColor(colorscheme['forground'][city]);
+            //map_headers[city].setBackgroundColor(colorscheme['background'][city]);
+           // div_grid.appendChild(tmp);
+            //packery_grid.appended(tmp);
+           // order.push(tmp);
+            //tmp_active.push(city);
             for(var key in map_graph){
                 if(map_city[key] === city){
                     order.push(map_graph[key].getElement());
                     map_graph[key].setBackgroundcolor(colorscheme['background'][city]);
-                    var theme = map_theme[key];
+                    //var theme = map_theme[key];
                     map_graph[key].setColor(colorscheme['forground'][city]);
                 }  
             }  
         });
-        active_headers = tmp_active;
+        //active_headers = tmp_active;
         updateHeight();
         packery_grid.items.forEach(function(o, index){
             o.element = order[index];
         }) ;
-        packery_grid.on('dragItemPositioned', function(  draggedItem ) {
+        /*packery_grid.on('dragItemPositioned', function(  draggedItem ) {
             console.log( 'Packery dragged item positioned', draggedItem.element );
             removeHeaders();
-        });
+        });*/
         packery_grid.layout();
     }
     
     function sortByTheme(){
-        if(active_headers.length > 0)
-            removeHeaders();
+        /*if(active_headers.length > 0)
+            removeHeaders();*/
         var themes = findThemes();
         var order = [];
         var tmp_active = [];
         themes.forEach(function(theme){
-            var tmp = map_headers[theme].getElement();
+            /*var tmp = map_headers[theme].getElement();
             map_headers[theme].setColor(colorscheme['forground'][theme]);
             map_headers[theme].setBackgroundColor(colorscheme['background'][theme]);
             div_grid.appendChild(tmp);
             packery_grid.appended(tmp);
             order.push(tmp);
-            tmp_active.push(theme);
+            tmp_active.push(theme);*/
             for(var key in map_graph){
                 if(map_theme[key] === theme){
                     order.push(map_graph[key].getElement());
@@ -399,19 +400,27 @@ function controller(data) {
                 }  
             }
         });
-        active_headers = tmp_active;
+        //active_headers = tmp_active;
         updateHeight();
         packery_grid.items.forEach(function(o, index){
             o.element = order[index];
         }) ;
-        packery_grid.on('dragItemPositioned', function(  draggedItem ) {
+       /*packery_grid.on('dragItemPositioned', function(  draggedItem ) {
             console.log( 'Packery dragged item positioned', draggedItem.element );
             removeHeaders();
-        });
+        });*/
         packery_grid.layout();
     }
     
-    function removeHeaders(){
+    function onIntroClick(){
+        context_height = 50;
+        grid_height = height - context_height - buttonbar_height;
+        context_graph.setHeight(50);
+        updateHeight();
+        packery_main.layout();
+    }
+    
+    /*function removeHeaders(){
         active_headers.forEach(function(key){
             var tmp = map_headers[key].getElement();
             packery_grid.remove(tmp);
@@ -420,7 +429,7 @@ function controller(data) {
         active_headers = [];
         updateHeight();
         packery_grid.layout();
-    }
+    }*/
     
     init();
     

@@ -21,6 +21,8 @@ function graph_context(){
     var onMouseMove;
     var onMouseLeave;
     
+    var onIntroClick;
+    
     var domain;
 
     //the function that makes the linegraph
@@ -48,6 +50,8 @@ function graph_context(){
             var timeDisplayFormat = d3.time.format('%H:%M');
             //bisect var
             var bisect = d3.bisector(function(d) { return d; }).left;
+            //intro
+            var introgroup;
 
             //makes and appends the svg to the element and adds buttons 
             function svg(){
@@ -57,9 +61,6 @@ function graph_context(){
                     .attr('width', width)
                     .attr('height', height)
                     .attr('class', 'svgbox');
-                    //.on('mouseenter', onEnter)
-                    //.on('mouseleave', onLeave)
-                    //.on('mousemove', onMove);
                 
                 svg.append('rect')
                     .attr('pointer-events', 'none')
@@ -73,18 +74,53 @@ function graph_context(){
                     .style('stroke-width', 1.5);  
             }
             
-            function onEnter(){
-                onMouseEnter();
+            function initIntro(){
+                introgroup = svg.append('g')
+                    .attr('class', 'introgroup');
+            
+                introgroup.append('text')
+                    .attr('x', padding.left)
+                    .text('Lorem ipsum dolor sit amet, consectetur adipiscing elit. \n\
+                    Nullam iaculis libero tellus, eget tincidunt purus auctor nec. \n\
+                    Interdum et malesuada fames ac ante ipsum primis in faucibus. \n\
+                    Sed pharetra ex egestas maximus sagittis. \n\
+                    In vitae tincidunt elit. \n\
+                    Mauris mi ante, pretium et nisi vel, lobortis mattis arcu.\n\
+                    Ut bibendum mauris at magna dignissim, id elementum nibh bibendum. \n\
+                    Quisque sit amet nunc lectus. Aliquam tincidunt risus non cursus lobortis. \n\
+                    Nunc augue mi, rhoncus in lectus eget, faucibus lobortis libero. \n\
+                    Suspendisse vitae purus eget nulla molestie efficitur. \n\
+                    Morbi ante massa, vulputate vel malesuada in, dictum at elit. Pellentesque aliquet vitae urna at accumsan. \n\
+                    Mauris maximus, ipsum ac porttitor mattis, quam mi hendrerit ligula, non pellentesque enim mi dapibus ante. \n\
+                    Vestibulum nisl lectus, fermentum in auctor at, imperdiet nec nulla. \n\
+                    Fusce tellus libero, venenatis vitae neque eu, vehicula placerat tortor. Sed ultrices aliquam risus sed sodales.')
+                    .style('font-size', 16)
+                    .style('font-family', 'Helvetica Neue,Helvetica,Arial,sans-serif;')
+                    .style('fill', 'white')
+                    .call(d3.util.wrap(width - padding.left - padding.right - 20));
+            
+                introgroup.append('rect')
+                        .attr('x', 100)
+                        .attr('y', height - 50)
+                        .attr('width', 80)
+                        .attr('height', 30)
+                        .style('fill', '#f1c40f')
+                        .on('click', introclicked);
+                
+                introgroup.append('text')
+                        .attr('pointer-events', 'none')
+                        .style('font-size', 16)
+                        .style('font-family', 'Helvetica Neue,Helvetica,Arial,sans-serif;')
+                        .style('fill', 'black')
+                        .style('font-weight', 'bold')
+                        .attr('x', 110)
+                        .attr('y', height - 30)
+                        .text('GOT IT!');
             }
             
-            function onMove(){
-                var position = d3.mouse(this)[0];
-                if(position >= padding.left && position <= width - padding.right)
-                    onMouseMove(position);
-            }
-            
-            function onLeave(){
-                onMouseLeave();
+            function introclicked(){
+                onIntroClick();
+                introgroup.remove();
             }
 
             function updateSvg() {
@@ -142,7 +178,6 @@ function graph_context(){
                     })
                     .tickSize(8, 0)
                     .tickPadding(5);
-                    
             
                 axis_day = d3.svg.axis()
                     .scale(xScale)
@@ -238,7 +273,7 @@ function graph_context(){
                     .selectAll('rect')
                         .style('fill', '696576')  
                         .attr('y', 0)
-                        .attr('height', height);
+                        .attr('height', 50);
             }
             
             function updateBrush(){
@@ -320,24 +355,8 @@ function graph_context(){
                     data_information_group.select('.datacircle')
                         .attr('cx', xScale(dataset))
                     .attr('cy', 0); 
-                }   
-
-                
-            };
-            
-            //returns the closest of the two objects to the value
-            function closestDataPointToValueX(object1, object2, value){
-                if( undefined === object1){
-                    if(undefined !== object2)
-                        return object2;
-                } else if(undefined === object2)
-                    return object1;
-                else {
-                    var inBetweenObjects = (object2 - object1)/2;
-                    if(value < new Date(object1.getTime() + inBetweenObjects)) return object1;
-                        else return object2;
-                } 
-            }         
+                }     
+            };     
             
             updateData = function() {
                 rearrangeData();
@@ -362,6 +381,7 @@ function graph_context(){
             };
 
             svg();
+            initIntro();
             rearrangeData();
             mapData();
             scales();
@@ -434,6 +454,11 @@ function graph_context(){
     
     chart.setOnMouseLeave = function(value){
         onMouseLeave = value;
+        return chart;
+    };
+    
+    chart.setOnIntroClick = function(value){
+        onIntroClick = value;
         return chart;
     };
          

@@ -231,6 +231,7 @@ function graph(){
                 var fontsize = 16;
                 
                 label_group = svg.append('g')
+                    .attr('pointer-events', 'none')
                     .attr('class', 'labelgroup');
                 
                 label_background = label_group.append('rect')
