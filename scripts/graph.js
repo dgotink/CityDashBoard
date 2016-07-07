@@ -707,7 +707,12 @@ function graph(){
             
             function onMove(){
                 var position = d3.mouse(this)[0];
-                onMouseMove(position);
+                if(position < padding.left)
+                    position = padding.left;
+                else if(position > width - padding.right)
+                    position = width - padding.right;
+                var value = scale_x.invert(position);
+                onMouseMove(position, value);
             }
             
             function onLeave(){

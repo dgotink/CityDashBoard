@@ -18,7 +18,7 @@ function controller(data) {
     //this array contains the values to which you multiply the height to get the total height for all the selected linegraphs
     //this array has a size the same as half the amount of graphs drawn +1 (for 0)
     //the index is the amount of selected graphs
-    var max_selected = 3;
+    var max_selected = 6;
     var selected_heights = [0, 0.4, 0.55, 0.67, 0.76, 0.76, 0.76];
     //context vars
     var context_div;
@@ -306,12 +306,12 @@ function controller(data) {
         context_graph.showDataInformation();
     };
     
-    var onMouseMoveGraph = function(position){
+    var onMouseMoveGraph = function(position, value){
         for (var key in map_graph) {            
             map_graph[key].moveIndicator(position);
             map_graph[key].moveDataInformation(position);
         } 
-        context_graph.moveDataInformation(position);
+        context_graph.moveDataInformation(value);
     };
     
     var onMouseLeaveGraph = function(){

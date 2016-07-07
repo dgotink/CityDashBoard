@@ -56,10 +56,10 @@ function graph_context(){
                     .append('svg')
                     .attr('width', width)
                     .attr('height', height)
-                    .attr('class', 'svgbox')
-                    .on('mouseenter', onEnter)
-                    .on('mouseleave', onLeave)
-                    .on('mousemove', onMove);
+                    .attr('class', 'svgbox');
+                    //.on('mouseenter', onEnter)
+                    //.on('mouseleave', onLeave)
+                    //.on('mousemove', onMove);
                 
                 svg.append('rect')
                     .attr('pointer-events', 'none')
@@ -290,11 +290,9 @@ function graph_context(){
                     .style('visibility', 'hidden');
             };
             
-            moveDataInformation = function(position){
-                var date =  xScale.invert(position);
-                var index = bisect(mapX, date);
-                var dataset = closestDataPointToValueX(mapX[index-1], mapX[index], date); 
-                
+            moveDataInformation = function(value){              
+                var dataset = value;
+
                 if(dataset !== last_shown){
                     last_shown = dataset;
                     var txt = data_information_group.select('.datatext')
