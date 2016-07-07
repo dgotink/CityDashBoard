@@ -113,22 +113,22 @@
                 data_dictionary['humidity'] = [];
                 data_dictionary['pressure'] = [];
                 var cities = ['leuven', 'antwerpen', 'brussel'];
-                
+                var col = '#4A4755';
                 var red = ['#852412', '#911E0A', '#9C0F0D']
                 var blue = ['#121D85', '#260E9C', '#0E419C']
                 var green = ['#0C850C', '#069C31', '#069155']
                 
-               filter(green[0], 'temperature', 'created_at.$date', 'temperature', 'Brussel', 'weather_Brussel.json', 'temperature_brussel', loaded);
-               filter(red[0], 'temperature', 'created_at.$date', 'temperature', 'Leuven', 'weather_Leuven.json', 'temperature_leuven', loaded);
-               filter(blue[0], 'temperature', 'created_at.$date', 'temperature', 'Antwerpen', 'weather_Antwerpen.json', 'temperature_antwerpen', loaded);
+               filter(col, 'temperature', 'created_at.$date', 'temperature', 'Brussel', 'weather_Brussel.json', 'temperature_brussel', loaded);
+               filter(col, 'temperature', 'created_at.$date', 'temperature', 'Leuven', 'weather_Leuven.json', 'temperature_leuven', loaded);
+               filter(col, 'temperature', 'created_at.$date', 'temperature', 'Antwerpen', 'weather_Antwerpen.json', 'temperature_antwerpen', loaded);
                
-               filter(green[1], 'humidity', 'created_at.$date', 'humidity', 'Brussel', 'weather_Brussel.json', 'humidity_brussel', loaded);
-               filter(red[1], 'humidity', 'created_at.$date', 'humidity', 'Leuven', 'weather_Leuven.json', 'humidity_leuven', loaded);
-               filter(blue[1], 'humidity', 'created_at.$date', 'humidity', 'Antwerpen', 'weather_Antwerpen.json', 'humidity_antwerpen', loaded);
+               filter(col, 'humidity', 'created_at.$date', 'humidity', 'Brussel', 'weather_Brussel.json', 'humidity_brussel', loaded);
+               filter(col, 'humidity', 'created_at.$date', 'humidity', 'Leuven', 'weather_Leuven.json', 'humidity_leuven', loaded);
+               filter(col, 'humidity', 'created_at.$date', 'humidity', 'Antwerpen', 'weather_Antwerpen.json', 'humidity_antwerpen', loaded);
                
-               filter(green[2], 'pressure', 'created_at.$date', 'pressure', 'Brussel', 'weather_Brussel.json', 'pressure_brussel', loaded);
-               filter(red[2], 'pressure', 'created_at.$date', 'pressure', 'Leuven', 'weather_Leuven.json', 'pressure_leuven', loaded);
-               filter(blue[2], 'pressure', 'created_at.$date', 'pressure', 'Antwerpen', 'weather_Antwerpen.json', 'pressure_antwerpen', loaded);
+               filter(col, 'pressure', 'created_at.$date', 'pressure', 'Brussel', 'weather_Brussel.json', 'pressure_brussel', loaded);
+               filter(col, 'pressure', 'created_at.$date', 'pressure', 'Leuven', 'weather_Leuven.json', 'pressure_leuven', loaded);
+               filter(col, 'pressure', 'created_at.$date', 'pressure', 'Antwerpen', 'weather_Antwerpen.json', 'pressure_antwerpen', loaded);
                
                /*groupByX(green[2], 'bike-spots', 'created_at.$date', 'freespots', 'bikes_Brussel.json', 'bike-spots_brussel', loaded);
                groupByX(blue[2], 'bike-spots', 'created_at.$date', 'freespots', 'bikes_Antwerpen.json', 'bike-spots_antwerpen', loaded);

@@ -521,8 +521,8 @@ function graph(){
                         next = scale_x(next.x);
                     else next = current;
                     
-                    var x1 = (prev + current)/2;
-                    var x2 = (current + next)/2;
+                    var x1 = Math.floor((prev + current)/2);
+                    var x2 = Math.ceil((current + next)/2);
                     
                     var tmp_width = x2 - x1;
                     
