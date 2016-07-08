@@ -9,5 +9,5 @@ function getIntroText(){
             You can also change the order in which the graphs are displayed. Simply click a graph and drag it to a new location.\n\
             You can tell the dashboard to order the graphs itself by clicking one of the according buttons. \n\
             The color of the graphs will change to give a better overview of the similarity of the datasets. \n\
-            ';
+            To reopen this manual after closing it, press the ? button on the top right side of the dashboard.';
 }

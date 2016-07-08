@@ -61,7 +61,11 @@ function graph_context(){
                     .append('svg')
                     .attr('width', width)
                     .attr('height', height)
-                    .attr('class', 'svgbox');
+                    .attr('class', 'svgbox')
+                    .on('mouseenter', entered)
+                    .on('mousemove', moved)
+                    .on('mouseleave', left);
+            
                 
                 svg.append('rect')
                     .attr('pointer-events', 'none')
@@ -73,6 +77,24 @@ function graph_context(){
                     .style('fill', '#27252D')
                     .style('stroke', 'white')
                     .style('stroke-width', 1.5);  
+            }
+            
+            function entered(){
+                showDataInformation();
+            }
+            
+            function moved(){
+                var position = d3.mouse(this)[0];
+                if(position < padding.left)
+                    position = padding.left;
+                else if(position > width - padding.right)
+                    position = width - padding.right;
+                var value = xScale.invert(position);
+                moveDataInformation(value);
+            }
+            
+            function left(){
+                hideDataInformation();
             }
             
             initIntro = function(){
@@ -344,7 +366,7 @@ function graph_context(){
                         .attr('cx', xScale(dataset))
                     .attr('cy', 0); 
                 }     
-            };     
+            };  
             
             updateData = function() {
                 rearrangeData();
