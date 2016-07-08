@@ -22,6 +22,7 @@ function graph_context(){
     var onMouseLeave;
     
     var onIntroClick;
+    var initIntro;
     
     var domain;
 
@@ -74,7 +75,7 @@ function graph_context(){
                     .style('stroke-width', 1.5);  
             }
             
-            function initIntro(){
+            initIntro = function(){
                 introgroup = svg.append('g')
                     .attr('class', 'introgroup');
             
@@ -446,6 +447,12 @@ function graph_context(){
     
     chart.setOnIntroClick = function(value){
         onIntroClick = value;
+        return chart;
+    };
+    
+    chart.reinstateIntro = function(){
+        if (typeof initIntro === 'function')
+            initIntro();
         return chart;
     };
          

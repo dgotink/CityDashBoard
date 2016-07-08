@@ -58,7 +58,8 @@ function controller(data) {
                 .setWidth(width)
                 .setHeight(buttonbar_height)
                 .setOnClick(onClickButtonBar)
-                .setMaxSelected(max_selected);
+                .setMaxSelected(max_selected)
+                .setOnHelpClick(onHelpClick);
         d3.select(buttonbar_div).call(buttonbar_graph);
         packery_main.appended(buttonbar_div);    
     }
@@ -415,22 +416,22 @@ function controller(data) {
     function onIntroClick(){
         context_height = 50;
         grid_height = height - context_height - buttonbar_height;
-        context_graph.setHeight(50);
+        context_graph.setHeight(context_height);
         updateHeight();
         packery_main.layout();
     }
     
-    /*function removeHeaders(){
-        active_headers.forEach(function(key){
-            var tmp = map_headers[key].getElement();
-            packery_grid.remove(tmp);
-        });
+    function onHelpClick(){
+        if(context_height === 50){
+            context_height = 250;
+            grid_height = height - context_height - buttonbar_height;
+            context_graph.setHeight(context_height);
+            context_graph.reinstateIntro();
+            updateHeight();
+            packery_main.layout();
+        }
+    }
 
-        active_headers = [];
-        updateHeight();
-        packery_grid.layout();
-    }*/
-    
     init();
     
 }

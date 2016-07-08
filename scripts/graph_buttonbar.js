@@ -21,6 +21,7 @@ function graph_buttonbar(keys){
     });
     
     var on_click;
+    var on_help_click;
 
     //the function that makes the linegraph
     function chart(selection){
@@ -37,6 +38,8 @@ function graph_buttonbar(keys){
             var trianglegroup;
             var triangletext;
             var trianglerect;
+            //help
+            var help_group;
             
             function initSvg(){
                 //make the svg
@@ -131,6 +134,33 @@ function graph_buttonbar(keys){
                         .style('fill', '#27252D');
             };
             
+            function initHelp(){
+                help_group = svg.append('g')
+                    .attr('class', 'helpgroup');
+                
+                help_group.append('circle')
+                    .attr('cx', width - padding.right - 50)
+                    .attr('cy', 25)
+                    .attr('r', 18)
+                    .style('fill', '#4A4755')
+                    .on('click', helpclicked);
+                
+                help_group.append('text')
+                    .attr('pointer-events', 'none')
+                    .attr('x', width - padding.right - 50 - 7.5)
+                    .attr('y', 25 + 7)
+                    .style('fill', 'white')
+                    .style('font-size', 24)
+                    .style('font-weight', 'bold')
+                    .style('font-family', 'Helvetica Neue,Helvetica,Arial,sans-serif;')
+                    .style('font', 'white')
+                    .text('?');
+            }
+            
+            function helpclicked(){
+                on_help_click();
+            }
+            
             function initButtons(){
                 button_group = svg.append('g')
                     .attr('class', 'buttongroup');
@@ -196,6 +226,7 @@ function graph_buttonbar(keys){
             initSvg();
             initButtons();
             initTriangles();
+            initHelp();
             
             updateWidth = function(){
                 updateSvg();
@@ -244,7 +275,12 @@ function graph_buttonbar(keys){
     chart.flashRed = function(){
         if (typeof flashRed === 'function') flashRed();
         return chart;
-    }
+    };
+    
+    chart.setOnHelpClick = function(value){
+        on_help_click = value;
+        return chart;
+    };
     
     return chart;    
 }

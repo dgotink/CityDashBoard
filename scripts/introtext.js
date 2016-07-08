@@ -1,16 +1,13 @@
 function getIntroText(){
-    return 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. \n\
-                    Nullam iaculis libero tellus, eget tincidunt purus auctor nec. \n\
-                    Interdum et malesuada fames ac ante ipsum primis in faucibus. \n\
-                    Sed pharetra ex egestas maximus sagittis. \n\
-                    In vitae tincidunt elit. \n\
-                    Mauris mi ante, pretium et nisi vel, lobortis mattis arcu.\n\
-                    Ut bibendum mauris at magna dignissim, id elementum nibh bibendum. \n\
-                    Quisque sit amet nunc lectus. Aliquam tincidunt risus non cursus lobortis. \n\
-                    Nunc augue mi, rhoncus in lectus eget, faucibus lobortis libero. \n\
-                    Suspendisse vitae purus eget nulla molestie efficitur. \n\
-                    Morbi ante massa, vulputate vel malesuada in, dictum at elit. Pellentesque aliquet vitae urna at accumsan. \n\
-                    Mauris maximus, ipsum ac porttitor mattis, quam mi hendrerit ligula, non pellentesque enim mi dapibus ante. \n\
-                    Vestibulum nisl lectus, fermentum in auctor at, imperdiet nec nulla. \n\
-                    Fusce tellus libero, venenatis vitae neque eu, vehicula placerat tortor. Sed ultrices aliquam risus sed sodales.';
+    return 'This dashboard allows you, the user, to get a better view of current data (of the past 7 days) in Belgium and its cities.\n\
+            These tile graphs you can see represent different datasets. If you click on one of these graphs it will expand and transmute into a line graph. \n\
+            This line graph shows you the actual data that was recorded. If you hover over the line the dashboard will display the data of the datapoint the closest to your mouse location. \n\
+            Each line graph exists of 2 lines: one for the actual data, the other is a trendline. You can swap the focus on the lines using the button on the top of this page.\n\
+            The x axis for all of the graphs can be found on the bottom of this page, right above this small tutorial \n\
+            You can manually alter the domain of the x axis using your mouse. By clicking and dragging you draw a gray rectangle that changes the graphs to only display the data from that timeframe.\n\
+            Note that only a certain amount of graphs can be expanded at the same time. You can monitor this at the top left of the dashboard.\n\
+            You can also change the order in which the graphs are displayed. Simply click a graph and drag it to a new location.\n\
+            You can tell the dashboard to order the graphs itself by clicking one of the according buttons. \n\
+            The color of the graphs will change to give a better overview of the similarity of the datasets. \n\
+            ';
 }
