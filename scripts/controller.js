@@ -45,7 +45,7 @@ function controller(data) {
         initPackeryGrid();
         initContextGraph();
         createGraphs();
-        sortByTheme();
+        sortByCity();
     }
     
     function initButtonBar(){

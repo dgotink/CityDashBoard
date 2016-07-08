@@ -277,7 +277,7 @@ function graph(){
                     .attr('pointer-events', 'none')
                     .attr('x', width/2)
                     .attr('y', 0)
-                    .attr('width', 1)
+                    .attr('width', 2)
                     .attr('height', height)
                     .attr('class', 'mouse_indicator')
                     .style('shape-rendering', 'crispEdges')

@@ -65,7 +65,6 @@ function graph_context(){
                     .on('mouseenter', entered)
                     .on('mousemove', moved)
                     .on('mouseleave', left);
-            
                 
                 svg.append('rect')
                     .attr('pointer-events', 'none')
@@ -85,12 +84,15 @@ function graph_context(){
             
             function moved(){
                 var position = d3.mouse(this)[0];
-                if(position < padding.left)
+                var y = d3.mouse(this)[1];
+                if(y <= 50){
+                   if(position < padding.left)
                     position = padding.left;
                 else if(position > width - padding.right)
                     position = width - padding.right;
                 var value = xScale.invert(position);
-                moveDataInformation(value);
+                moveDataInformation(value); 
+                }
             }
             
             function left(){
@@ -319,9 +321,11 @@ function graph_context(){
                 data_information_group.append('text')
                     .attr('class', 'datatext');
             
-                data_information_group.append('circle')
-                    .attr('class', 'datacircle')
-                    .attr('r', 3)
+                data_information_group.append('rect')
+                    .attr('class', 'datarect')
+                    .attr('y', 1)
+                    .attr('width', 2)
+                    .attr('height', 5)
                     .style('fill', 'red');
             }
             
@@ -362,9 +366,8 @@ function graph_context(){
                         .attr('width', bounding_box.width +10)
                         .attr('height', bounding_box.height +4);
             
-                    data_information_group.select('.datacircle')
-                        .attr('cx', xScale(dataset))
-                    .attr('cy', 0); 
+                    data_information_group.select('.datarect')
+                        .attr('x', xScale(dataset))
                 }     
             };  
             
